@@ -3,10 +3,11 @@
  *
  */
 
-#ifndef __glitchspike__menu__
-#define __glitchspike__menu__
+#ifndef __blickport__menu__
+#define __blickport__menu__
 
-#include "glitchspike.hpp"
+#include <vector>
+#include "blickport.hpp"
 
 #define NUM_MENU_WIDGETS 10
 #define NUM_MENU_CHOICES 10
@@ -35,12 +36,9 @@ struct Choice{
 
     int value, min, max;
     int isSelectable;
-}
+};
 
 class Menu{
-    sf::Texture textureFd;
-    sf::Sprite sprite;
-
     std::vector<Choice> choiceList;
     int currentChoice;
     
@@ -49,23 +47,22 @@ public:
     Menu(){ currentChoice = -1; };
     ~Menu(){};
   
-    void addChoice(std::string *data, std::string *label,
-                   int value, int min, int max);
+    void addChoice(std::string data, std::string label, int isSelectable = 1,
+                   int value = 0, int min = 0, int max = 1);
     void setCurrentChoice(int index){ currentChoice = index; };
 
-    void event(sf::Event *event);
     void event(gs::Event *event);
     void update();
     void render();
 };
 
 class MenuFactory{
-    void constructMainMenu(Menu *ob);
+    void constructMainMenu(Menu *ob, int isUnlocked);
     void constructOptionsMenu(Menu *ob){};
     void constructPauseMenu(Menu *ob){};
 public:
     MenuFactory(){}
-    Menu *getMenu(std::string choice, int isUnlocked);
+    Menu *getMenu(std::string choice);
 };
 
 #endif

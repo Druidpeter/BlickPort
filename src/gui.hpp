@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __glitchspike__gui__
-#define __glitchspike__gui__
+#ifndef __blickport__gui__
+#define __blickport__gui__
 
 
 //! The GUI class is a container class for non main window

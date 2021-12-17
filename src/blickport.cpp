@@ -1,10 +1,10 @@
 /*
- * @file rogueboss.cpp
+ * @file blickport.cpp
  * @brief implementation of top level game routines
  *
- * The entirety of a rogueboss game instances takes place within a
- * 'rogueboss' object defined in 'rogueboss.hpp'. The only thing that
- * main() is responsible for is the creation of a valid rogueboss game
+ * The entirety of a blickport game instances takes place within a
+ * 'blickport' object defined in 'blickport.hpp'. The only thing that
+ * main() is responsible for is the creation of a valid blickport game
  * object, and then calling the object's 'execute()' method, which
  * starts the game.
  *
@@ -23,6 +23,7 @@
  */
 
 #include <iostream>
+#include <cstdlib>
 
 #include <curses.h>
 
@@ -46,6 +47,15 @@ extern Menu *activeMenu;
 extern Menu *mainMenu;
 extern Menu *optionsMenu;
 extern Menu *pauseMenu;
+
+/* Private Methods */
+void BlickPort::handleUserInput(int userInput)
+{
+    loopFlag = false;
+    gameFlag = GAME_EXIT;
+}
+
+/* Public Methods */
 
 void BlickPort::loadNewGame()
 {
@@ -78,13 +88,12 @@ void BlickPort::loadLevel()
 
 void BlickPort::mainLoop()
 {
-    static sf::Time elapsed = sf::seconds(0.0f);
     loopFlag = true;
 
     while(loopFlag == true){
-        events(); // Game waits for input in events.
-        update();
         render();
+        events();
+        update();
     };
 }
  
@@ -98,17 +107,25 @@ void BlickPort::events()
 
         if(gsEvent->type == gs::EventType::someEventType){
             // long ass if-else-if chain.
-        } else if(gsEvent->type == gs::EventType::MenuEvent){
-            activeMenu.event(gsEvent);
+        } else if(gsEvent->type == gs::EventType::MenuEventType){
+            activeMenu->event(gsEvent);
         }
 
         // Remove event after having dispatched it.
         eventQueue.pop_front();
     }
+
+    int userInput = getch();
+    handleUserInput(userInput);
 }        
         
 void BlickPort::update()
 {
+    // Need to swap out the glitchspike map/player/entity logic for
+    // blickport. So just return for now.
+    return;
+
+    
     if(gameState == STATE_PROPER){
         map.update();
         player.update();
@@ -133,10 +150,11 @@ void BlickPort::update()
 //! for each object on the list. Then return.
  
 void BlickPort::render()
-{
-
-    // convert this line to ncurses equivalent.
-    // screen->clear(sf::Color::Black);
+{    
+    if(clear() == ERR){
+        std::cerr << "Can not clear screen! Killing self.";
+        std::exit(ERR);
+    }
     
     if(gameState == STATE_PROPER){
         // Base Environment
@@ -151,12 +169,12 @@ void BlickPort::render()
         // gui.render();
     } else {
         activeMenu->render();
-    } // convert: screen->display();
+    } refresh();
 }
 
-//! BlickPort game instance constructor
+//! Blickport game instance constructor
 
-//! Construct a valid, playable game instance of a Rogueboss
+//! Construct a valid, playable game instance of a Blickport
 //! object. The constructor receives options sent in from the
 //! commandline environment and uses those options, if any, to guide
 //! the instantiation process.
@@ -170,7 +188,7 @@ void BlickPort::render()
 
 BlickPort::BlickPort()
 {
-    gameFlag = MAIN_MENU;
+    gameFlag = GAME_LEVEL;
     loopFlag = true;
     gameState = STATE_IMPROPER;
     gameLevel = 1;
@@ -180,15 +198,14 @@ BlickPort::~BlickPort(){}
 
 void BlickPort::handleOptions(int argc, char *argv[])
 {
-    setlocale(LC_ALL, "en_US.utf8");
-    initscr(); cbreak(); noecho();
-    intrflush(stdscr, FALSE);
-    keypad(stdscr, TRUE);
+    mainMenu = menuFactory.getMenu("MAIN_MENU");
+    optionsMenu = menuFactory.getMenu("OPTIONS_MENU");
+    pauseMenu = menuFactory.getMenu("PAUSE_MENU");
 }
 
 //! The execute method builds necessary aspects of the game world, and
-//! initializes most game-local structures. Whereas the rogueboss
-//! constructor generates a valid rogueboss instance, the rogueboss ::
+//! initializes most game-local structures. Whereas the blickport
+//! constructor generates a valid blickport instance, the blickport ::
 //! execute() method generates a valid gameplay environment.
 
 int BlickPort::execute()
@@ -217,10 +234,7 @@ int BlickPort::execute()
             loadLevel();
             gameState = STATE_PROPER;
         }
-
-        // Restart the clock before we enter the main loop. 
-        sfClock.restart();
-
+        
         mainLoop();
     }
   
@@ -229,8 +243,6 @@ int BlickPort::execute()
 
 void BlickPort::cleanUp()
 {
-    endwin();
-
     delete mainMenu;
     delete optionsMenu;
     delete pauseMenu;

@@ -1,0 +1,31 @@
+-- TODO.txt --
+
+1. Rework the codebase so that the game starts at level 1, the level
+is properly displayed. And controller input causes the target and
+player to move. Just use the target image for both the player and the
+target sprite. There's no need to deal with animations quite yet. (COMPLETE)
+
+1.1 create new aux executable to generate player animation.dat
+file. Have renderdata factory properly create the renderdata on
+request using data loaded from animation file, and insert into player
+spawn entity. Check to make sure that the animation runs smoothly and
+everything is in order BEFORE trying to set-up player-map collision
+logic. (IN PROGRESS)
+
+2. Implement player entry into the map and 2D world physics. Collision
+against the map should work well. Still no need for animations.
+
+3. Implement entity entry into the map and basic entity behavior for
+the different types of entites: e.g. enemies, items, map switches,
+letters. The logic doesn't need to be fully realized at this
+stage. Just something to bootstrap off of.
+
+4. Implement transitions between all game stages. E.g. between levels,
+menus, and exit conditions.
+
+5. Implement sprite animation system and corresponding animations +
+soundbank, et al.
+
+6. Flesh out and prepare to finalize entity behaviour logic.
+
+7. Finalize, apply polish, repeat.

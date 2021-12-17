@@ -11,7 +11,7 @@ namespace gs{
         // Menu has reached a final state. We need to continue
         // processing based on the selection values of the menu
         // inputs.
-        int bool; // Just some random var for now.
+        int value; // Just some random var for now.
     };
 
     enum MenuEventType{
@@ -22,8 +22,8 @@ namespace gs{
     struct MenuEvent{
         MenuEventType type;
         union data{
-            MenuChanged;
-            MenuConfirm;
+            MenuChanged menuChanged;
+            MenuConfirm menuConfirm;
         };
     };
     
@@ -35,9 +35,8 @@ namespace gs{
     struct Event{
         EventType type;
         union data{
-            MenuEvent;
+            MenuEvent menuEvent;
         };
-        
     };
 }
 

@@ -37,7 +37,6 @@ Spawn::Spawn(){}
 
 Spawn::~Spawn(){}
 
-void Spawn::event(sf::Event *event){}
 void Spawn::event(gs::Event *event){}
 
 int Spawn::update(){ return true; }
@@ -61,7 +60,90 @@ gs::State *Spawn::getState(int identifier)
 
 void PlayerRenderData::setAnimation(int animationType)
 {
+    currAnimType = animationType;
+    
+    currentFrame = 0;
+    animationMode = 0;
+    flipX_flag = 0;
 
+    static int firstRun = true;
+
+    
+    if(firstRun == true){
+        firstRun = false;
+    } else {
+        currentAnimation.erase(currentAnimation.begin(), currentAnimation.end());
+        offsets.erase(offsets.begin(), offsets.end());
+    }
+
+    if(animationType == ANIM_IDLE){
+        numFrames = 4;
+
+        currentAnimation.resize(numFrames);
+        offsets.resize(numFrames);
+        
+        for(int i = 0; i < numFrames; ++i){
+            currentAnimation[i].x = 48*i;
+            currentAnimation[i].y = 48*0;
+
+            offsets[i].x = 48;
+            offsets[i].y = 48;
+        }
+    } else if(animationType == ANIM_RUN){
+        numFrames = 10;
+
+        currentAnimation.resize(numFrames);
+        offsets.resize(numFrames);
+       
+        for(int i = 0; i < numFrames; ++i){
+            currentAnimation[i].x = 48*i;
+            currentAnimation[i].y = 48*1;
+
+            offsets[i].x = 48;
+            offsets[i].y = 48;
+        }
+    } else if(animationType == ANIM_JUMP_UP){
+        numFrames = 4;
+
+        currentAnimation.resize(numFrames);
+        offsets.resize(numFrames);
+
+        for(int i = 0; i < numFrames; ++i){
+            currentAnimation[i].x = 56*i;
+            currentAnimation[i].y = 48*2;
+
+            offsets[i].x = 56;
+            offsets[i].y = 70;
+        } animationMode = ANIM_FREEZE;
+    } else if(animationType == ANIM_JUMP_FALL){
+        numFrames = 4;
+
+        currentAnimation.resize(numFrames);
+        offsets.resize(numFrames);
+
+        for(int i = 0; i < numFrames; ++i){
+            currentAnimation[i].x = 56*i + 56*3;
+            currentAnimation[i].y = 48*2;
+
+            offsets[i].x = 56;
+            offsets[i].y = 70;
+        } animationMode = ANIM_LAST_BLIT;       
+    } else if(animationType == ANIM_JUMP_LAND){
+        numFrames = 3;
+
+        currentAnimation.resize(numFrames);
+        offsets.resize(numFrames);
+
+        for(int i = 0; i < numFrames; ++i){
+            currentAnimation[i].x = 56*i + 56*5;
+            currentAnimation[i].y = 48*2;
+
+            offsets[i].x = 56;
+            offsets[i].y = 70;
+        } animationMode = ANIM_NEXT;
+
+        nextAnimType = ANIM_IDLE;
+    }
 }
 
 Player::Player()
@@ -82,57 +164,6 @@ Player::Player()
 }
 
 Player::~Player(){}
-
-void Player::event(sf::Event *event)
-{
-    gs::State *tmp_s = states[(lookup.find(MAP_STATE)->second)];
-    static gs::MapState *ob = dynamic_cast<gs::MapState *>(tmp_s);
-
-    if(event->type == sf::Event::JoystickMoved){
-        int js_val = (event->joystickMove.position /
-                                   std::abs(event->joystickMove.position));
-
-        if(std::abs(js_val) < 20){
-            js_val = 0;
-        }
-        
-        switch(event->joystickMove.axis){
-        case sf::Joystick::X:
-            ob->horizontal_axis = js_val;
-            break;
-        case sf::Joystick::Y:
-            ob->vertical_axis = js_val;
-        }
-    } else if(event->type == sf::Event::KeyPressed){
-        switch(event->key.code){
-        case sf::Keyboard::Left:
-            ob->horizontal_axis += -1;
-            break;
-        case sf::Keyboard::Right:
-            ob->horizontal_axis += 1;
-            break;
-        case sf::Keyboard::Up:
-            ob->vertical_axis += -1;
-            break;
-        case sf::Keyboard::Down:
-            ob->vertical_axis += 1;
-        }
-    } else if(event->type == sf::Event::KeyReleased){
-        switch(event->key.code){
-        case sf::Keyboard::Left:
-            ob->horizontal_axis -= -1;
-            break;
-        case sf::Keyboard::Right:
-            ob->horizontal_axis -= 1;
-            break;
-        case sf::Keyboard::Up:
-            ob->vertical_axis -= -1;
-            break;
-        case sf::Keyboard::Down:
-            ob->vertical_axis -= 1;
-        }
-    }
-}
 
 void Player::event(gs::Event *event)
 {

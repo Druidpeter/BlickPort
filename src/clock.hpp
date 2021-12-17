@@ -4,8 +4,8 @@
  *
  */
 
-#ifndef __glitchspike__clock__
-#define __glitchspike__clock__
+#ifndef __blickport__clock__
+#define __blickport__clock__
 
 #include "entity.hpp"
 

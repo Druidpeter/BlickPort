@@ -1,7 +1,10 @@
-#include "glitchspike.hpp"
-#include "menu.hpp"
+#include <iostream>
 
-extern GlitchSpike glitchSpike;
+#include "blickport.hpp"
+#include "menu.hpp"
+#include "event.hpp"
+
+extern BlickPort blickPort;
 
 void MenuFactory::constructMainMenu(Menu *ob, int isUnlocked = false)
 {
@@ -40,8 +43,8 @@ Menu *MenuFactory::getMenu(std::string choice)
     return ob;
 }
 
-void Menu::addChoice(std::string data, std::string label, isSelectable = true,
-                     int value = 0, int min = 0, int max = 1)
+void Menu::addChoice(std::string data, std::string label, int isSelectable,
+                     int value, int min, int max)
 {
     int index = choiceList.size();
     choiceList.resize(index + 1);
@@ -56,30 +59,7 @@ void Menu::addChoice(std::string data, std::string label, isSelectable = true,
     tmp.max = max;
 }
 
-void event(sf::Event *event)
-{
-
-    
-    if(event->type == sf::Event::KeyPressed){
-        switch(event->key.code){
-        default:
-            // Technically, the menu should include logic to handle
-            // moving between menu options, adjusting selection
-            // values, etc. But since a lot of this hasn't been
-            // implemented, just make it so that any keypress causes
-            // the main gameplay to start.
-            
-            gs::Event *ev = new gs::Event;
-            ev->type = gs::EventType::MenuEventType;
-            ev->data = new MenuEvent;
-            ev->data->type = gs::MenuEventType::MenuChangedType;
-            ev->data->data = new MenuChanged;
-            ev->data->data->gameFlag = GAME_LEVEL;
-            glitchSpike.raiseEvent(ev);
-        }
-}
-
-void event(gs::Event *event)
+void Menu::event(gs::Event *event)
 {
     
 }
