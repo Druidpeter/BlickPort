@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include <iostream>
+#include <curses.h>
 
 #include "entity.hpp"
 #include "types.hpp"
@@ -38,6 +39,8 @@ Spawn::Spawn(){}
 Spawn::~Spawn(){}
 
 void Spawn::event(gs::Event *event){}
+
+void Spawn::event(int event){}
 
 int Spawn::update(){ return true; }
 
@@ -170,6 +173,30 @@ void Player::event(gs::Event *event)
     
 }
 
+// This is for events that require no additional context to serve.
+
+void Player::event(int event)
+{
+    gs::MapState *state = static_cast<gs::MapState *>(getState(MAP_STATE));
+    
+    switch(event){
+    case MOVE_LEFT:
+        state->velocity.x = -1;
+        break;
+    case MOVE_UP:
+        state->velocity.y = -1;
+        break;
+    case MOVE_DOWN:
+        state->velocity.y = 1;
+        break;
+    case MOVE_RIGHT:
+        state->velocity.x = 1;
+        break;
+    default:
+        break;
+    }
+}
+
 int Player::update()
 {
     static int killFlag = false;
@@ -185,4 +212,18 @@ int Player::update()
     }
 
     return killFlag;
+}
+
+void Player::render()
+{
+    gs::MapState *state = static_cast<gs::MapState *>(getState(MAP_STATE));
+    Target *target = map.getTarget();
+
+    int x = state->position.x - target->targetX;
+    int y = state->position.y - target->targetY;
+
+    x = COLS/2 + x;
+    y = LINES/2 + y;
+
+    mvaddch(y, x, '@');
 }

@@ -34,6 +34,7 @@
 #include "event.hpp"
 #include "menu.hpp"
 #include "gui.hpp"
+#include "spawner.hpp"
 
 extern Map map;
 extern std::list<gs::Event> eventQueue;
@@ -41,18 +42,63 @@ extern GsClock gsClock;
 extern std::list<Entity *> entities; //!< Global spawned entities.
 extern Player player;
 extern Gui gui;
+extern Spawner spawner;
 
 extern MenuFactory menuFactory;
 extern Menu *activeMenu;
 extern Menu *mainMenu;
+extern Menu *statsMenu;
 extern Menu *optionsMenu;
 extern Menu *pauseMenu;
 
 /* Private Methods */
 void BlickPort::handleUserInput(int userInput)
 {
-    loopFlag = false;
-    gameFlag = GAME_EXIT;
+    if(gameState == STATE_PROPER){
+        switch(userInput){
+        case 'q':
+            loopFlag = false;
+            gameFlag = GAME_EXIT;
+            break;
+        case 'h':
+            player.event(MOVE_LEFT);
+            break;
+        case 'j':
+            player.event(MOVE_DOWN);
+            break;
+        case 'k':
+            player.event(MOVE_UP);
+            break;
+        case 'l':
+            player.event(MOVE_RIGHT);
+            break;
+        }
+    } else if(gameState == STATE_IMPROPER){
+        switch(userInput){
+        case KEY_ENTER:
+        case 'e':
+            activeMenu->event(CONFIRM_MENU_SELECTION);
+            break;
+        case 'h':
+        case KEY_LEFT:
+            activeMenu->event(TOGGLE_SELECTION_LEFT);
+            break;
+        case 'l':
+        case KEY_RIGHT:
+            activeMenu->event(TOGGLE_SELECTION_RIGHT);
+            break;
+        case 'k':
+        case KEY_UP:
+            activeMenu->event(MOVE_SELECTION_PREV);
+            break;
+        case 'j':
+        case KEY_DOWN:
+            activeMenu->event(MOVE_SELECTION_NEXT);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 /* Public Methods */
@@ -69,16 +115,14 @@ void BlickPort::loadSaveGame()
 
 //! Setup map and spawn supervisor.
 
-void BlickPort::loadLevel()
+void BlickPort::loadLevel(int direction)
 {
-    if(gameLevel < 7 && gameLevel > 0){
-        map.load(gameLevel++);
+    int nextLevel = map.getCurrentLevel() + direction;
+    map.load(nextLevel);
         
-        // Set starting data for whatever data cages the player(entity)
-        // participates in.
-        player.initStates();
-    }
-
+    // Set starting data for whatever data cages the player(entity)
+    // participates in.
+    player.initStates();
 }
 
 //! Load specific game objects into the global objects queue and gui
@@ -90,10 +134,12 @@ void BlickPort::mainLoop()
 {
     loopFlag = true;
 
+    render();
+    
     while(loopFlag == true){
-        render();
         events();
         update();
+        render();
     };
 }
  
@@ -121,14 +167,9 @@ void BlickPort::events()
         
 void BlickPort::update()
 {
-    // Need to swap out the glitchspike map/player/entity logic for
-    // blickport. So just return for now.
-    return;
-
-    
     if(gameState == STATE_PROPER){
-        map.update();
         player.update();
+        map.update();
         gsClock.update();
 
         // The update method returning False means remove it
@@ -188,7 +229,7 @@ void BlickPort::render()
 
 BlickPort::BlickPort()
 {
-    gameFlag = GAME_LEVEL;
+    gameFlag = MAIN_MENU;
     loopFlag = true;
     gameState = STATE_IMPROPER;
     gameLevel = 1;
@@ -198,9 +239,23 @@ BlickPort::~BlickPort(){}
 
 void BlickPort::handleOptions(int argc, char *argv[])
 {
-    mainMenu = menuFactory.getMenu("MAIN_MENU");
-    optionsMenu = menuFactory.getMenu("OPTIONS_MENU");
-    pauseMenu = menuFactory.getMenu("PAUSE_MENU");
+
+}
+
+void BlickPort::raiseEvent(int event)
+{
+    switch(event){
+    case GOTO_MODE_STATS_MENU:
+        gameFlag = STATS_MENU;
+        loopFlag = false;
+        break;
+    case GOTO_MODE_GAME_LEVEL:
+        gameFlag = GAME_LEVEL;
+        loopFlag = false;
+        break;
+    default:
+        break;
+    }
 }
 
 //! The execute method builds necessary aspects of the game world, and
@@ -216,6 +271,9 @@ int BlickPort::execute()
             activeMenu = mainMenu;
             gameState = STATE_IMPROPER;
             break;
+        case STATS_MENU:
+            activeMenu = statsMenu;
+            gameState = STATE_IMPROPER;
         case NEW_GAME:
             loadNewGame();
             break;
@@ -231,7 +289,9 @@ int BlickPort::execute()
             gameState = STATE_IMPROPER;
             break;
         case GAME_LEVEL:
-            loadLevel();
+            loadLevel(1);
+            spawner.spawnPlayer(&player);
+            map.startTracking(&player);
             gameState = STATE_PROPER;
         }
         

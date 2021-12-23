@@ -46,6 +46,7 @@ public:
     virtual ~Entity();
 
     virtual void event(gs::Event *event);
+    virtual void event(int event){};
     virtual int update();
     virtual void render();
 };
@@ -110,6 +111,7 @@ public:
     virtual ~Spawn();
 
     virtual void event(gs::Event *event);
+    virtual void event(int event);
     virtual int update();
     virtual void render();
 
@@ -150,7 +152,9 @@ public:
     virtual ~Player();
 
     virtual void event(gs::Event *event);
+    virtual void event(int event);
     virtual int update();
+    virtual void render();
 };
 
 #endif

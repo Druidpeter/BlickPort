@@ -16,7 +16,10 @@
 // match as close as we can specific desired lines and cols values.
 // But we'll see.
 
+#include <cstdlib>
+
 #include <curses.h>
+#include <time.h>
 
 #include "blickport.hpp"
 #include "entity.hpp"
@@ -26,15 +29,23 @@
 #include "gui.hpp"
 #include "menu.hpp"
 #include "event.hpp"
+#include "spawner.hpp"
+#include "menuparser.hpp"
 
 BlickPort blickPort;
 Player player;
+
 Map map;
+Spawner spawner(&map);
+
 GsClock gsClock;
 
 MenuFactory menuFactory;
+MenuParser menuParser;
+
 Menu *activeMenu = NULL;
 Menu *mainMenu = menuFactory.getMenu("MAIN_MENU");
+Menu *statsMenu = menuFactory.getMenu("STATS_MENU");
 Menu *optionsMenu = menuFactory.getMenu("OPTIONS_MENU");
 Menu *pauseMenu = menuFactory.getMenu("PAUSE_MENU");
 
@@ -45,6 +56,8 @@ Gui gui; // Head up Display controls.
 
 int main(int argc, char *argv[])
 {
+    std::srand(time(NULL));
+    
     setlocale(LC_ALL, "");
     initscr(); cbreak(); noecho();
     intrflush(stdscr, FALSE);

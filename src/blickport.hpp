@@ -22,6 +22,7 @@
 #define PAUSE_MENU 6
 #define GAME_EXIT 7
 #define GAME_LEVEL 8
+#define STATS_MENU 9
 
 /* Level Flags -- Which level is running */
 
@@ -61,7 +62,7 @@ class BlickPort{
 private:
     void loadNewGame();
     void loadSaveGame();
-    void loadLevel();
+    void loadLevel(int direction);
 
     void mainLoop();
 
@@ -75,6 +76,7 @@ public:
     ~BlickPort();
     void handleOptions(int argc, char *argv[]);
     void raiseEvent(gs::Event *ev){};
+    void raiseEvent(int event);
 
     int execute();
     void cleanUp();

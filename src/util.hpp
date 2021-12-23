@@ -40,6 +40,9 @@ namespace gs{
         MapState(){
             horizontal_axis = 0;
             vertical_axis = 0;
+
+            velocity.x = 0;
+            velocity.y = 0;
         };
         
         virtual void initialize(int spawnType);
