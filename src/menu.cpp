@@ -12,7 +12,49 @@ extern Player player;
 /* Private Menu Methods */
 void Menu::render()
 {
+    // Choice *choice;
     
+    // for(int i = 0; i < choiceList.size(); ++i){
+    //     choice = &choiceList[i];
+    //     mvaddstr(y, x, choice->label.c_str());
+
+    //     int tmpx = 9;
+
+    //     if(i == currentChoice){
+    //         mvaddch(y, x-2, '*');
+    //     }
+        
+    //     if(choice->inputField == true){
+    //         mvaddstr(y, x + tmpx + 2, choice->data.c_str());
+    //     } else {
+    //         const char *minstr = std::to_string(choice->min).c_str();
+    //         const char *maxstr = std::to_string(choice->max).c_str();
+            
+    //         int sminstr = sizeof(minstr)/sizeof(char);
+    //         int smaxstr = sizeof(maxstr)/sizeof(char);
+
+    //         int tmp2 = x+tmpx+sminstr;
+            
+    //         mvaddstr(y, x+tmpx+2, minstr);
+    //         mvaddch(y, tmp2, '|');
+            
+    //         for(int j = choice->min; j <= choice->max; ++j){
+    //             tmp2++;
+                
+    //             if(j <= choice->value){
+    //                 mvaddch(y, tmp2, '-');
+    //             } else {
+    //                 mvaddch(y, tmp2, '.');
+    //             }
+    //         } tmp2++;
+
+    //         mvaddch(y, tmp2, '|');
+    //         tmp2 += 2;
+    //         mvaddstr(y, tmp2, maxstr);
+    //     }
+
+    //     y += 1;
+    // }
 }
 
 /* Public Menu Methods */
