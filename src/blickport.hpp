@@ -1,4 +1,4 @@
-/*
+/**
  * @file blickport.hpp
  * @brief A High Octane Hybrid Beat-em-Up Platformer w/story elements
  *
@@ -11,6 +11,7 @@
 #define __blickport__blickport__
 
 #include <list>
+#include "bp_event.hpp"
 
 /* GameFlag(s) -- General Operation Modes */
 
@@ -47,10 +48,6 @@
 #define METHOD_SUCCESS 0
 #define METHOD_FAIL -1
 
-namespace gs{
-    class Event;
-}
-
 class BlickPort{
     int gameFlag; //!< The game re-enters a killed main loop so long
                   //!< as this is nonzero.
@@ -75,8 +72,7 @@ public:
     BlickPort();
     ~BlickPort();
     void handleOptions(int argc, char *argv[]);
-    void raiseEvent(gs::Event *ev){};
-    void raiseEvent(int event);
+    void raiseEvent(bp::EventType eType, bp::EventData eData);
 
     int execute();
     void cleanUp();

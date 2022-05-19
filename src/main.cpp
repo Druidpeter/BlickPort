@@ -25,12 +25,10 @@
 #include "entity.hpp"
 #include "map.hpp"
 #include "clock.hpp"
-#include "util.hpp"
+#include "state.hpp"
 #include "gui.hpp"
 #include "menu.hpp"
-#include "event.hpp"
 #include "spawner.hpp"
-#include "menuparser.hpp"
 
 BlickPort blickPort;
 Player player;
@@ -40,17 +38,16 @@ Spawner spawner(&map);
 
 GsClock gsClock;
 
-MenuFactory menuFactory;
-MenuParser menuParser;
-
 Menu *activeMenu = NULL;
-Menu *mainMenu = menuFactory.getMenu("MAIN_MENU");
-Menu *statsMenu = menuFactory.getMenu("STATS_MENU");
-Menu *optionsMenu = menuFactory.getMenu("OPTIONS_MENU");
-Menu *pauseMenu = menuFactory.getMenu("PAUSE_MENU");
+MainMenu mainMenu;
+StatsMenu statsMenu;
+Menu optionsMenu;
+Menu pauseMenu;
 
-std::list<gs::Event> eventQueue; //!< Game internal events.
-std::list<Entity *> entities; //!< Global spawned entities.
+std::list<bp::EventType> eTypeQueue; //!< Game internal events.
+std::list<bp::EventData> eDataQueue; //!< Global spawned entities.
+std::list<Entity *> entities;
+
 
 Gui gui; // Head up Display controls.
 

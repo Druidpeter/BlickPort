@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 #include "entity.hpp"
-#include "util.hpp"
+#include "state.hpp"
 
 #define LEVEL_WIDTH 200
 #define LEVEL_HEIGHT 100
@@ -101,7 +101,7 @@ public:
     virtual void render();
   
     int load(int level);
-    void setStateData(gs::MapState *state, int spawnType);
+    void setStateData(MapState *state, int spawnType);
 
     // Target really should be turned into a global object. But just
     // get access to it via the map for now.
@@ -109,7 +109,7 @@ public:
 
     // Receive a mapState object and check for collisions with the
     // map.
-    void collideStep(gs::MapState *state);
+    void collideStep(MapState *state);
 
     // Get a random tile index in the map that matches tile within
     // deviance.

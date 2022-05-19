@@ -10,6 +10,7 @@
 #include <cstring>
 
 #include "blickport.hpp"
+#include "menu_event.hpp"
 
 // Other stuff.
 
@@ -34,102 +35,84 @@
 #define NO_DELAY_ACTIVATE 0
 #define DELAY_ACTIVATE 1
 
+namespace ct{
+    enum ChoiceType{
+        INPUT_FIELD,
+        TOGGLE_CONFIRM,
+        TOGGLE_RANGE,
+        DIVIDER,
+        DIVIDER_LABEL
+    };
+}
+
 struct Choice{
     std::string label;
     std::string data;
 
     int value, min, max;
 
-    // If inputField is true, then toggling will either clear or
-    // permit the user to input a string value inside 'data' variable.
-
-    // If inputField is false, then toggling will increment or
-    // decrement the value variable of the option, not exceeding the
-    // minimum or maximum values. Note that standard choice options
-    // can be emulated by having a minimum/maximum value pair of
-    // [0,1], respectively.
-    int inputField;
-
-    int isSelectable;
+    ct::ChoiceType choiceType;
+public:
+    Choice(std::string label, std::string data, int value, int min, int max,
+           ct::ChoiceType choiceType){
+        this->label = label; this->data = data; this->value = value;
+        this->min = min; this->max = max; this->choiceType = choiceType;
+    };
 };
 
 class Menu{
 protected:
     std::string menuName;
     std::vector<Choice> choiceList;
-    std::vector<int> dividers;
     std::vector<int> selections;
 
     int nrows;
     int ncols;
     
     int currentChoice;
-
-    // If requireUnique is true, then the menu selection changes by
-    // navigating the menu. Toggling selection still works normally.
-
-    // If false, then navigating the menu does not deselect previously
-    // selected items, and does not automatically make the currently
-    // highlighted node selected. Items must be explicitly selected
-    // via toggling. Confirming chosen selections works normally. This
-    // is to allow multiple items to be selected at a time within a
-    // menu.
-    int requireUnique;
 private:
-    void toggleCurrentChoice(std::string value);
-    void moveSelection(int value);
+    virtual void toggleMenuSelection(){};
+    virtual void confirmMenuSelection(){};
+    virtual void selectNext(){};
+    virtual void selectPrev(){};
+    virtual void selectNextCol(){};
+    virtual void selectPrevCol(){};
 public:
-    Menu(){ currentChoice = -1; nrows = 1, ncols = 1; };
+    Menu(){};
     virtual ~Menu(){};
   
-    void addChoice(std::string label, int inputField = false, int isSelectable=false,
-                   int value = 0, int min = 0, int max = 1);
-
-    void addDivider();
-    
-    void setCurrentChoice(int index){ currentChoice = index; };
-
-    void setName(const char *name){ menuName = name; };
-    char *getName(){
-        const char *tmp = menuName.c_str();
-        int s = sizeof(tmp)/sizeof(char);
-
-        char *rstr = new char[s];
-        std::strcpy(rstr, tmp);
-        
-        return rstr;
-    };
-
-    void setDimensions(int nr, int nc){
-        nrows = nr;
-        ncols = nc;
-    };
-
-    void event(gs::Event *event);
-    virtual void event(int event);
-    void update();
-
-    virtual void render(int x = 0, int y = 0);
+    virtual void event(mn::EventType eType){};
+    virtual void update(){};
+    virtual void render();
 };
 
 class MainMenu : public Menu{
+private:
+    // void toggleMenuSelection();
+    // void confirmMenuSelection();
+    // void selectNext();
+    // void selectPrev();
+    // void selectNextCol();
+    // void selectPrevCol();
 public:
-    virtual void render(int x = 0, int y = 0);
+    MainMenu(){}
+    virtual ~MainMenu(){};
+    void event(mn::EventType eType){};
+    void render();
 };
 
 class StatsMenu : public Menu{
+    void toggleMenuSelection(){};
+    void confirmMenuSelection();
+    void selectNext(){};
+    void selectPrev(){};
+    void selectNextCol(){};
+    void selectPrevCol(){};
 public:
-    virtual void render(int x = 0, int y = 0);
-};
-
-class MenuFactory{
-    void constructMainMenu(Menu *ob);
-    void constructStatsMenu(Menu *ob);
-    void constructOptionsMenu(Menu *ob){};
-    void constructPauseMenu(Menu *ob){};
-public:
-    MenuFactory(){}
-    Menu *getMenu(std::string choice);
+    StatsMenu();
+    virtual ~StatsMenu();
+    void event(mn::EventType eType);
+    void render();
 };
 
 #endif

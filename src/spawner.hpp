@@ -16,7 +16,7 @@ public:
         this->map = map;
     }
         
-    ~Spawner(){};
+    virtual ~Spawner(){};
 
     void spawnPlayer(Spawn *spawn);
 };

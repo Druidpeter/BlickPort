@@ -31,25 +31,24 @@
 #include "entity.hpp"
 #include "map.hpp"
 #include "clock.hpp"
-#include "event.hpp"
 #include "menu.hpp"
 #include "gui.hpp"
 #include "spawner.hpp"
 
 extern Map map;
-extern std::list<gs::Event> eventQueue;
+extern std::list<bp::EventType> eTypeQueue;
+extern std::list<bp::EventData> eDataQueue;
 extern GsClock gsClock;
 extern std::list<Entity *> entities; //!< Global spawned entities.
 extern Player player;
 extern Gui gui;
 extern Spawner spawner;
 
-extern MenuFactory menuFactory;
 extern Menu *activeMenu;
-extern Menu *mainMenu;
-extern Menu *statsMenu;
-extern Menu *optionsMenu;
-extern Menu *pauseMenu;
+extern MainMenu mainMenu;
+extern StatsMenu statsMenu;
+extern Menu optionsMenu;
+extern Menu pauseMenu;
 
 /* Private Methods */
 void BlickPort::handleUserInput(int userInput)
@@ -77,23 +76,23 @@ void BlickPort::handleUserInput(int userInput)
         switch(userInput){
         case KEY_ENTER:
         case 'e':
-            activeMenu->event(CONFIRM_MENU_SELECTION);
+            activeMenu->event(mn::CONFIRM_MENU_SELECTION);
             break;
         case 'h':
         case KEY_LEFT:
-            activeMenu->event(TOGGLE_SELECTION_LEFT);
+            activeMenu->event(mn::TOGGLE_SELECTION);
             break;
         case 'l':
         case KEY_RIGHT:
-            activeMenu->event(TOGGLE_SELECTION_RIGHT);
+            //activeMenu->event(mn::CLEAR_SELECTION);
             break;
         case 'k':
         case KEY_UP:
-            activeMenu->event(MOVE_SELECTION_PREV);
+            //activeMenu->event(mn::SELECT_NEXT);
             break;
         case 'j':
         case KEY_DOWN:
-            activeMenu->event(MOVE_SELECTION_NEXT);
+            //activeMenu->event(MOVE_SELECTION_NEXT);
             break;
         default:
             break;
@@ -145,20 +144,22 @@ void BlickPort::mainLoop()
  
 void BlickPort::events()
 {
-    static gs::Event *gsEvent;
+    static bp::EventType eType;
+    static bp::EventData eData;
     
     // Service internal game events.
-    while(eventQueue.size() > 0){
-        gsEvent = &(eventQueue.front());
+    while(eTypeQueue.size() > 0 && eDataQueue.size() > 0){
+        eType = eTypeQueue.front();
 
-        if(gsEvent->type == gs::EventType::someEventType){
+        if(eType == bp::EventType::NULL_EVENT){
             // long ass if-else-if chain.
-        } else if(gsEvent->type == gs::EventType::MenuEventType){
-            activeMenu->event(gsEvent);
+        } else if(eType == bp::EventType::NULL_EVENT){
+            // activeMenu->event(gsEvent);
         }
 
         // Remove event after having dispatched it.
-        eventQueue.pop_front();
+        eTypeQueue.pop_front();
+        eDataQueue.pop_front();
     }
 
     int userInput = getch();
@@ -167,6 +168,8 @@ void BlickPort::events()
         
 void BlickPort::update()
 {
+    if(!loopFlag){ return; };
+    
     if(gameState == STATE_PROPER){
         player.update();
         map.update();
@@ -191,7 +194,9 @@ void BlickPort::update()
 //! for each object on the list. Then return.
  
 void BlickPort::render()
-{    
+{
+    if(!loopFlag){ return; };
+    
     if(clear() == ERR){
         std::cerr << "Can not clear screen! Killing self.";
         std::exit(ERR);
@@ -229,7 +234,7 @@ void BlickPort::render()
 
 BlickPort::BlickPort()
 {
-    gameFlag = MAIN_MENU;
+    gameFlag = STATS_MENU;
     loopFlag = true;
     gameState = STATE_IMPROPER;
     gameLevel = 1;
@@ -242,15 +247,12 @@ void BlickPort::handleOptions(int argc, char *argv[])
 
 }
 
-void BlickPort::raiseEvent(int event)
+void BlickPort::raiseEvent(bp::EventType eType, bp::EventData eData)
 {
-    switch(event){
-    case GOTO_MODE_STATS_MENU:
-        gameFlag = STATS_MENU;
-        loopFlag = false;
-        break;
-    case GOTO_MODE_GAME_LEVEL:
+    switch(eType){
+    case bp::GOTO_MODE_GAME_LEVEL:
         gameFlag = GAME_LEVEL;
+        gameState = STATE_PROPER;
         loopFlag = false;
         break;
     default:
@@ -268,11 +270,11 @@ int BlickPort::execute()
     while(gameFlag != GAME_EXIT){
         switch(gameFlag){
         case MAIN_MENU:
-            activeMenu = mainMenu;
+            activeMenu = &mainMenu;
             gameState = STATE_IMPROPER;
             break;
         case STATS_MENU:
-            activeMenu = statsMenu;
+            activeMenu = &statsMenu;
             gameState = STATE_IMPROPER;
         case NEW_GAME:
             loadNewGame();
@@ -281,11 +283,11 @@ int BlickPort::execute()
             loadSaveGame();
             break;
         case OPTIONS_MENU:
-            activeMenu = optionsMenu;
+            activeMenu = &optionsMenu;
             gameState = STATE_IMPROPER;
             break;
         case PAUSE_MENU:
-            activeMenu = pauseMenu;
+            activeMenu = &pauseMenu;
             gameState = STATE_IMPROPER;
             break;
         case GAME_LEVEL:
@@ -303,11 +305,5 @@ int BlickPort::execute()
 
 void BlickPort::cleanUp()
 {
-    delete mainMenu;
-    delete optionsMenu;
-    delete pauseMenu;
 
-    mainMenu = NULL;
-    optionsMenu = NULL;
-    pauseMenu = NULL;
 }

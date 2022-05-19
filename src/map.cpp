@@ -372,8 +372,8 @@ void Map :: event()
 
 void Map :: update()
 {
-    gs::State *tmp_s = tracked->getState(MAP_STATE);
-    gs::MapState *ob = dynamic_cast<gs::MapState *>(tmp_s);
+    State *tmp_s = tracked->getState(MAP_STATE);
+    MapState *ob = dynamic_cast<MapState *>(tmp_s);
 
     quadtree::Vector2<int> tmpPos = ob->position;
     
@@ -505,14 +505,14 @@ int Map::load(int level)
     return METHOD_SUCCESS;
 }
 
-void Map::setStateData(gs::MapState *state, int spawnType)
+void Map::setStateData(MapState *state, int spawnType)
 {
     // This method is depreciated, and will be removed. The map cage
     // now no longer handles spawning mechanics, for either the player
     // or non-player entities.
 }
 
-void Map::collideStep(gs::MapState *state)
+void Map::collideStep(MapState *state)
 {
 
 }
@@ -540,8 +540,8 @@ void Map::startTracking(Spawn *spawn)
 {
     tracked = spawn;
 
-    gs::State *tmp_s = tracked->getState(MAP_STATE);
-    gs::MapState *ob = dynamic_cast<gs::MapState *>(tmp_s);
+    State *tmp_s = tracked->getState(MAP_STATE);
+    MapState *ob = dynamic_cast<MapState *>(tmp_s);
 
     target.targetX = ob->position.x;
     target.targetY = ob->position.y;

@@ -7,11 +7,11 @@
 #include "map.hpp"
 #include "entity.hpp"
 #include "spawner.hpp"
-#include "util.hpp"
+#include "state.hpp"
 
 void Spawner::spawnPlayer(Spawn *spawn)
 {
-    gs::MapState *state = static_cast<gs::MapState *>(spawn->getState(MAP_STATE));
+    MapState *state = static_cast<MapState *>(spawn->getState(MAP_STATE));
 
     int x, y;
     map->getTileRand(EMPTY, y, x, 0);

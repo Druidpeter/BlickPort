@@ -12,9 +12,9 @@
 #include <map>
 
 #include "blickport.hpp"
-#include "util.hpp"
+#include "entity_event.hpp"
+#include "state.hpp"
 #include "types.hpp"
-#include "event.hpp"
 
 #include "includes/quadtree/Vector2.h"
 
@@ -38,6 +38,11 @@
 #define ANIM_LAST_BLIT 2
 #define ANIM_NEXT 3
 
+#define MOVE_LEFT 0
+#define MOVE_UP 1
+#define MOVE_DOWN 2
+#define MOVE_RIGHT 3
+
 class Entity{
 protected:
 
@@ -45,8 +50,7 @@ public:
     Entity();
     virtual ~Entity();
 
-    virtual void event(gs::Event *event);
-    virtual void event(int event){};
+    virtual void event(en::EventType eType);
     virtual int update();
     virtual void render();
 };
@@ -104,14 +108,13 @@ class Spawn : protected Entity{
 protected:
     int spawnType;
     RenderData *data;
-    std::vector<gs::State *> states;
+    std::vector<State *> states;
     std::map<int, int> lookup;
 public:
     Spawn();
     virtual ~Spawn();
 
-    virtual void event(gs::Event *event);
-    virtual void event(int event);
+    virtual void event(en::EventType eType);
     virtual int update();
     virtual void render();
 
@@ -122,10 +125,13 @@ public:
     }
 
     void initStates(); //!< Special initialization.
-    gs::State *getState(int identifier);
+    State *getState(int identifier);
 
     void orientXLeft(){ data->flipX_flag = true; };
-    void orientXRight(){ data->flipX_flag = false; };    
+    void orientXRight(){ data->flipX_flag = false; };
+
+    /* Event Wrappers */
+    virtual void setBaseStats(int stats[NUM_BASE_STATS]);
 };
 
 // Different types of spawns, e.g. npcs, enemies, items, need
@@ -151,7 +157,7 @@ public:
     Player();
     virtual ~Player();
 
-    virtual void event(gs::Event *event);
+    virtual void event(en::EventType eType);
     virtual void event(int event);
     virtual int update();
     virtual void render();

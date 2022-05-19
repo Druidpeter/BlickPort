@@ -7,7 +7,7 @@
 
 #include "entity.hpp"
 #include "types.hpp"
-#include "util.hpp"
+#include "state.hpp"
 #include "map.hpp"
 
 #include "includes/quadtree/Vector2.h"
@@ -18,7 +18,7 @@ Entity::Entity(){}
 
 Entity::~Entity(){}
 
-void Entity::event(gs::Event *event){}
+void Entity::event(en::EventType eType){}
 
 int Entity::update(){ return true; }
 
@@ -38,9 +38,7 @@ Spawn::Spawn(){}
 
 Spawn::~Spawn(){}
 
-void Spawn::event(gs::Event *event){}
-
-void Spawn::event(int event){}
+void Spawn::event(en::EventType eType){}
 
 int Spawn::update(){ return true; }
 
@@ -56,9 +54,22 @@ void Spawn::initStates()
     }
 }
 
-gs::State *Spawn::getState(int identifier)
+State *Spawn::getState(int identifier)
 {
     return states[(lookup.find(identifier)->second)];
+}
+
+void Spawn::setBaseStats(int stats[NUM_BASE_STATS])
+{
+    SpawnState *state = static_cast<SpawnState *>(getState(SPAWN_STATE));
+
+    // en::EventData eData;
+
+    // for(int i = 0; i < NUM_BASE_STATS; i++){
+    //     eData.baseStats[i] = stats[i];
+    // }
+    
+    // state->event(gs::EventId::SPAWN_SET_BASE_STATS, eData);
 }
 
 void PlayerRenderData::setAnimation(int animationType)
@@ -153,7 +164,7 @@ Player::Player()
 {
     spawnType = SPAWN_PLAYER;
     states.emplace_back();
-    states.back() = new gs::MapState;
+    states.back() = new MapState;
     lookup.insert(std::pair<int,int>(MAP_STATE, states.size()-1));
 
     data = new PlayerRenderData();
@@ -168,7 +179,7 @@ Player::Player()
 
 Player::~Player(){}
 
-void Player::event(gs::Event *event)
+void Player::event(en::EventType eType)
 {
     
 }
@@ -177,7 +188,7 @@ void Player::event(gs::Event *event)
 
 void Player::event(int event)
 {
-    gs::MapState *state = static_cast<gs::MapState *>(getState(MAP_STATE));
+    MapState *state = static_cast<MapState *>(getState(MAP_STATE));
     
     switch(event){
     case MOVE_LEFT:
@@ -216,7 +227,7 @@ int Player::update()
 
 void Player::render()
 {
-    gs::MapState *state = static_cast<gs::MapState *>(getState(MAP_STATE));
+    MapState *state = static_cast<MapState *>(getState(MAP_STATE));
     Target *target = map.getTarget();
 
     int x = state->position.x - target->targetX;
