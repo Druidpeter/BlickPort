@@ -73,26 +73,28 @@ void BlickPort::handleUserInput(int userInput)
             break;
         }
     } else if(gameState == STATE_IMPROPER){
+        mn::EventData eventData;
+        
         switch(userInput){
         case KEY_ENTER:
         case 'e':
-            activeMenu->event(mn::CONFIRM_MENU_SELECTION);
+            activeMenu->event(mn::CONFIRM_MENU_SELECTION, eventData);
             break;
         case 'h':
         case KEY_LEFT:
-            activeMenu->event(mn::TOGGLE_SELECTION);
+            activeMenu->event(mn::CLEAR_SELECTION, eventData);
             break;
         case 'l':
         case KEY_RIGHT:
-            //activeMenu->event(mn::CLEAR_SELECTION);
+            activeMenu->event(mn::TOGGLE_SELECTION, eventData);
             break;
         case 'k':
         case KEY_UP:
-            //activeMenu->event(mn::SELECT_NEXT);
+            activeMenu->event(mn::SELECT_PREV, eventData);
             break;
         case 'j':
         case KEY_DOWN:
-            //activeMenu->event(MOVE_SELECTION_NEXT);
+            activeMenu->event(mn::SELECT_NEXT, eventData);
             break;
         default:
             break;

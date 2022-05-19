@@ -17,6 +17,10 @@ namespace mn{
         SELECT_NEXT_COL,
         SELECT_PREV_COL
     };
+
+    union EventData{
+        int value;
+    };
 }
 
 #endif

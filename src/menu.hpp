@@ -71,24 +71,26 @@ protected:
     
     int currentChoice;
 private:
-    virtual void toggleMenuSelection(){};
+    virtual void toggleMenuSelection(int value){};
     virtual void confirmMenuSelection(){};
-    virtual void selectNext(){};
-    virtual void selectPrev(){};
+    virtual void selectNext(int value){};
+    virtual void selectPrev(int value){};
     virtual void selectNextCol(){};
     virtual void selectPrevCol(){};
+public:
+    virtual std::string inputLabel(int xt, int yt);
 public:
     Menu(){};
     virtual ~Menu(){};
   
-    virtual void event(mn::EventType eType){};
+    virtual void event(mn::EventType eType, mn::EventData eData){};
     virtual void update(){};
     virtual void render();
 };
 
 class MainMenu : public Menu{
 private:
-    // void toggleMenuSelection();
+    // void toggleMenuSelection(int value);
     // void confirmMenuSelection();
     // void selectNext();
     // void selectPrev();
@@ -102,16 +104,18 @@ public:
 };
 
 class StatsMenu : public Menu{
-    void toggleMenuSelection(){};
+    void toggleMenuSelection(int value);
     void confirmMenuSelection();
-    void selectNext(){};
-    void selectPrev(){};
+    void selectNext(int value);
+    void selectPrev(int value);
     void selectNextCol(){};
     void selectPrevCol(){};
+private:
+    std::string fetchLabel(Choice choice);
 public:
     StatsMenu();
     virtual ~StatsMenu();
-    void event(mn::EventType eType);
+    void event(mn::EventType eType, mn::EventData eData);
     void render();
 };
 
