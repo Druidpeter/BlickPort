@@ -70,46 +70,42 @@ protected:
     int ncols;
     
     int currentChoice;
-private:
+protected:
     virtual void toggleMenuSelection(int value){};
     virtual void confirmMenuSelection(){};
-    virtual void selectNext(int value){};
-    virtual void selectPrev(int value){};
+    virtual void selectNext(int value);
+    virtual void selectPrev(int value);
     virtual void selectNextCol(){};
     virtual void selectPrevCol(){};
+private:
+    std::string fetchLabel(Choice choice);
 public:
     virtual std::string inputLabel(int xt, int yt);
 public:
     Menu(){};
     virtual ~Menu(){};
   
-    virtual void event(mn::EventType eType, mn::EventData eData){};
+    virtual void event(mn::EventType eType, mn::EventData eData);
     virtual void update(){};
     virtual void render();
 };
 
 class MainMenu : public Menu{
-private:
-    // void toggleMenuSelection(int value);
-    // void confirmMenuSelection();
-    // void selectNext();
-    // void selectPrev();
-    // void selectNextCol();
-    // void selectPrevCol();
+protected:
+    void toggleMenuSelection(int value){};
+    void confirmMenuSelection();
 public:
-    MainMenu(){}
+    MainMenu();
     virtual ~MainMenu(){};
-    void event(mn::EventType eType){};
-    void render();
+    void event(mn::EventType eType, mn::EventData);
 };
 
 class StatsMenu : public Menu{
+protected:
     void toggleMenuSelection(int value);
     void confirmMenuSelection();
     void selectNext(int value);
     void selectPrev(int value);
-    void selectNextCol(){};
-    void selectPrevCol(){};
 private:
     std::string fetchLabel(Choice choice);
 public:
@@ -117,6 +113,22 @@ public:
     virtual ~StatsMenu();
     void event(mn::EventType eType, mn::EventData eData);
     void render();
+};
+
+class RaceMenu : public Menu{
+public:
+    void confirmMenuSelection();
+public:
+    RaceMenu();
+    virtual ~RaceMenu(){};
+};
+
+class ClassMenu : public Menu{
+public:
+    void confirmMenuSelection();
+public:
+    ClassMenu();
+    virtual ~ClassMenu(){};
 };
 
 #endif

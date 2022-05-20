@@ -85,6 +85,18 @@ struct SpawnState : public State{
         MAX_WEIGHT, MAX_GELD};
     int derv[NUM_DERIVED_STATS];
 
+    // Race Stats
+    int raceType;
+    int raceMod[NUM_BASE_STATS];
+
+    // Class Stats
+    int classType;
+    int classMod[NUM_BASE_STATS];
+
+    // Inventory Stats
+    // std::list<Equippable> equipment;
+    // std::list<Consumable> pouch;
+    
     int lvl;
     int xp;
 

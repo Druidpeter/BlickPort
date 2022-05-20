@@ -43,6 +43,20 @@
 #define MOVE_DOWN 2
 #define MOVE_RIGHT 3
 
+/* Available Races */
+
+#define RACE_HUMAN 0
+
+/* Available Classes */
+
+#define CLASS_NOBLE 0
+#define CLASS_TRADESMAN 1
+#define CLASS_SOLDIER 2
+#define CLASS_DOCTOR 3
+#define CLASS_SCHOLAR 4
+#define CLASS_PEASANT 5
+
+
 class Entity{
 protected:
 
@@ -132,6 +146,8 @@ public:
 
     /* Event Wrappers */
     virtual void setBaseStats(int stats[NUM_BASE_STATS]);
+    virtual void setRace(int value);
+    virtual void setClass(int value);
 };
 
 // Different types of spawns, e.g. npcs, enemies, items, need

@@ -19,7 +19,11 @@
 namespace bp{
     enum EventType{
         NULL_EVENT,
-        GOTO_MODE_GAME_LEVEL
+        GOTO_MODE_GAME_LEVEL,
+        INIT_NEW_GAME,
+        GOTO_STATS_MENU,
+        GOTO_RACE_MENU,
+        GOTO_CLASS_MENU,
     };
     
     union EventData{

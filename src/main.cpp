@@ -41,6 +41,8 @@ GsClock gsClock;
 Menu *activeMenu = NULL;
 MainMenu mainMenu;
 StatsMenu statsMenu;
+RaceMenu raceMenu;
+ClassMenu classMenu;
 Menu optionsMenu;
 Menu pauseMenu;
 

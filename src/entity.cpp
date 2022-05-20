@@ -72,6 +72,17 @@ void Spawn::setBaseStats(int stats[NUM_BASE_STATS])
     // state->event(gs::EventId::SPAWN_SET_BASE_STATS, eData);
 }
 
+void Spawn::setRace(int value)
+{
+    SpawnState *state = static_cast<SpawnState *>(getState(SPAWN_STATE));
+}
+
+void Spawn::setClass(int value)
+{
+    SpawnState *state = static_cast<SpawnState *>(getState(SPAWN_STATE));
+}
+
+
 void PlayerRenderData::setAnimation(int animationType)
 {
     currAnimType = animationType;

@@ -47,6 +47,8 @@ extern Spawner spawner;
 extern Menu *activeMenu;
 extern MainMenu mainMenu;
 extern StatsMenu statsMenu;
+extern RaceMenu raceMenu;
+extern ClassMenu classMenu;
 extern Menu optionsMenu;
 extern Menu pauseMenu;
 
@@ -236,7 +238,7 @@ void BlickPort::render()
 
 BlickPort::BlickPort()
 {
-    gameFlag = STATS_MENU;
+    gameFlag = MAIN_MENU;
     loopFlag = true;
     gameState = STATE_IMPROPER;
     gameLevel = 1;
@@ -256,6 +258,23 @@ void BlickPort::raiseEvent(bp::EventType eType, bp::EventData eData)
         gameFlag = GAME_LEVEL;
         gameState = STATE_PROPER;
         loopFlag = false;
+        break;
+    case bp::GOTO_STATS_MENU:
+        gameFlag = STATS_MENU;
+        gameState = STATE_IMPROPER;
+        loopFlag = false;
+        break;
+    case bp::GOTO_RACE_MENU:
+        gameFlag = RACE_MENU;
+        gameState = STATE_IMPROPER;
+        loopFlag = false;
+        break;
+    case bp::GOTO_CLASS_MENU:
+        gameFlag = CLASS_MENU;
+        gameState = STATE_IMPROPER;
+        loopFlag = false;
+        break;
+    case bp::INIT_NEW_GAME:
         break;
     default:
         break;
@@ -297,6 +316,15 @@ int BlickPort::execute()
             spawner.spawnPlayer(&player);
             map.startTracking(&player);
             gameState = STATE_PROPER;
+            break;
+        case RACE_MENU:
+            activeMenu = &raceMenu;
+            gameState = STATE_IMPROPER;
+            break;
+        case CLASS_MENU:
+            activeMenu = &classMenu;
+            gameState = STATE_IMPROPER;
+            break;
         }
         
         mainLoop();
