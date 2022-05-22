@@ -177,8 +177,8 @@ void BlickPort::update()
     if(gameState == STATE_PROPER){
         player.update();
         map.update();
-        gsClock.update();
-
+        spawner.update();
+        
         // The update method returning False means remove it
         // from the list.
         

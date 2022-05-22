@@ -26,6 +26,7 @@
 #define STATS_MENU 9
 #define RACE_MENU 10
 #define CLASS_MENU 11
+#define LOAD_LEVEL 12
 
 /* Level Flags -- Which level is running */
 

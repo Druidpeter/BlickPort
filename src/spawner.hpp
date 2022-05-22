@@ -7,10 +7,30 @@
 #ifndef __blickport__spawner__
 #define __blickport__spawner__
 
+#include <map>
+
+#include "cage.hpp"
+
 class Map;
 
-class Spawner{
+namespace sp{
+    enum SpawnType{
+        FIELD_MOUSE
+    };
+}
+
+class Spawner : public Cage{
     Map *map;
+
+    // 'rate' is the ratio of
+    // [(# spawns)/(# ticks)]*10000;
+    
+    // We do it this way to preserve precision,
+    // but this also means that when using the
+    // value as a 'ratio' we need to divide the
+    // rate by 10,000 first before using it.
+    
+    std::map<sp::SpawnType, int> spawnRates;
 public:
     Spawner(Map *map){
         this->map = map;
@@ -19,6 +39,12 @@ public:
     virtual ~Spawner(){};
 
     void spawnPlayer(Spawn *spawn);
+
+    void calculateBiomes();
+    
+    void event(){};
+    void update();
+    void render(){};
 };
 
 #endif

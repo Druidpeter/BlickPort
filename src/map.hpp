@@ -5,7 +5,7 @@
  */
 
 #ifndef __blickport__map__
-#define __blickportx__map__
+#define __blickport__map__
 
 #include <cstring>
 #include <vector>
@@ -14,6 +14,7 @@
 
 #include "entity.hpp"
 #include "state.hpp"
+#include "cage.hpp"
 
 #define LEVEL_WIDTH 200
 #define LEVEL_HEIGHT 100
@@ -70,7 +71,7 @@ struct Target{
     int targetMaxVel;
 };
 
-class Map {
+class Map : public Cage {
     uint16_t **layout;
     int currentLevel;
     Target target;
