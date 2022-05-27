@@ -334,9 +334,82 @@ void Map::graphAlgorithm(uint16_t **data)
 
 }
 
-void Map::loadLevelFromFile(FILE *fd)
+void Map::loadLevelFromFile(int level)
 {
+    std::string datadir = "./Data/level"
+    
+    std::string tmp = "level";
+    tmp.append(std::to_string(level) + ".dat");
 
+    const char *lvl = tmp.c_str();
+
+    FILE *fd = fopen(lvl, "r");
+    fseek(fd, 40, SEEK_SET);
+
+    uint16_t **tmp;
+
+    switch(flag){
+    case 0:
+        tmp = layout;
+        break;
+    case 1:
+        tmp = storage[0].layout;
+        break;
+    case 2:
+        tmp = storage[1].layout;
+    }
+    
+    fread(tmp, sizeof(uint16_t), LEVEL_WIDTH*LEVEL_HEIGHT, fd);
+    
+    return METHOD_SUCCESS;
+}
+
+void Map::flushStorage(int flag)
+{
+    if(flag == 1){
+        // Flush storage[0]
+    } else if(flag == -1){
+        // Flush storage[1]
+    }
+}
+
+void Map::traverseLevel(int levelId)
+{
+    if(levelId > deepestLevel){
+        // Generate new level.
+    } else if(levelId == currentLevel ||
+              levelId == 0){
+        // Do nothing.
+        return;
+    }
+
+    // Load level from storage or file.
+
+    if(levelId == currentLevel+1){
+        // Flush storage[0] to file.
+        
+        // Store currentlevel in storage[0]
+
+        // Restore storage[1] to layout.
+
+        // Fetch from file into storage[1],
+        // if possible.
+    } else if(levelId == currentLevel-1){
+        // Flush storage[1] to file.
+        
+        // Store currentlevel in storage[1]
+
+        // Restore storage[0] to layout.
+
+        // Fetch from file into storage[0],
+        // if possible.
+    } else {
+        // Fetch levelId from file to layout.
+
+        // Fetch from file into storage[0] and
+        // storage[1] levelId-1 and levelId+1,
+        // respectively, if possible.
+    }
 }
 
 void Map::dumpCurrentLevel()
@@ -464,45 +537,9 @@ void Map :: render()
 
 //! Load a new chunk of the map.
 
-int Map::load(int level)
+int Map::load(int level, int flag)
 {
-    // Check to see if currentLevel exists as file. If not, save the
-    // current level as file.
 
-    std::string tmp = "level";
-    tmp.append(std::to_string(currentLevel));
-
-    const char *lvl = tmp.c_str();
-
-    FILE *fd = fopen(lvl, "r");
-
-    if(fd == NULL){
-        // File does not exist. Save current level to file.
-        dumpCurrentLevel();
-    } else {
-        fclose(fd);
-    }
-
-
-    // Check to see if the next level exists as file. If so, then load
-    // it directly. Otherwise, generate it.
-
-    tmp = "level";
-    tmp.append(std::to_string(level));
-
-    lvl = tmp.c_str();
-    fd = fopen(lvl, "r");
-
-    if(fd == NULL){
-        // File does not exist. Generate the level.
-        generateLevel(level);
-    } else {
-        // File does exist. Load level directly from file.
-        loadLevelFromFile(fd);
-        fclose(fd);
-    } 
-    
-    return METHOD_SUCCESS;
 }
 
 void Map::setStateData(MapState *state, int spawnType)

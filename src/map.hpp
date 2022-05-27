@@ -71,9 +71,17 @@ struct Target{
     int targetMaxVel;
 };
 
+struct LevelStorage{
+    int levelId;
+    uint16_t **layout;
+};
+
 class Map : public Cage {
     uint16_t **layout;
+    LevelStorage storage[2];
+    
     int currentLevel;
+    int deepestLevel;
     Target target;
     Spawn *tracked;
 
@@ -85,8 +93,10 @@ private:
     void growthAlgorithm(uint16_t **data);
     void gableAlgorithm(uint16_t **data);
     void graphAlgorithm(uint16_t **data);
-    void loadLevelFromFile(FILE *fd);
+    void loadLevelFromFile(int level);
+    void flushStorage(int flag);
     void dumpCurrentLevel();
+    void traverseLevel(int levelId);
 public:
     // Getters and Setters
     int getCurrentLevel(){return currentLevel; }
@@ -101,7 +111,7 @@ public:
     virtual void update();
     virtual void render();
   
-    int load(int level);
+    int load(int level, int flag);
     void setStateData(MapState *state, int spawnType);
 
     // Target really should be turned into a global object. But just

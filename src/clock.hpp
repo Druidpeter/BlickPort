@@ -13,6 +13,11 @@ class GsClock{
     int currentTick;
     int lastTick;
 
+    // Keep track of how many times the GsClock has overflowed
+    // over. This is important for things like level traversal, or
+    // stuff that needs to keep track of long periods of time.
+    long int numCycles;
+
     const int MAX_TICKS;
 public:
     GsClock():MAX_TICKS(1000){
