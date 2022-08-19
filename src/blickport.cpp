@@ -35,6 +35,8 @@
 #include "gui.hpp"
 #include "spawner.hpp"
 
+#include "blickport_config.h"
+
 extern Map map;
 extern std::list<bp::EventType> eTypeQueue;
 extern std::list<bp::EventData> eDataQueue;
@@ -314,6 +316,7 @@ int BlickPort::execute()
         case GAME_LEVEL:
             loadLevel(1);
             spawner.spawnPlayer(&player);
+			spawner.processLevelData(&map);
             map.startTracking(&player);
             gameState = STATE_PROPER;
             break;

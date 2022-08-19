@@ -27,10 +27,50 @@
 
 /* Private Methods */
 
+// Some interesting thoughts about level generation. Because we have a
+// jank and primitive level storage system, all generated levels are
+// identified by a strictly ascending integer. That is, each new level
+// generated is assigned to it an integer that is always higher than
+// the the numbers assigned to all previously generated levels.
+
+// However, we have something called "level mutation
+// decay". Essentially, there are multiple overworld algorithms that
+// can be used to generate levels. For any specific level generated,
+// there is a primary generator, and 0 or more auxiliary
+// generators. Further, each generator's "pathology" e.g. how intense
+// the effect of that generator is on the level design, is determined
+// by a special algorithm:
+
+// First, a level's primary generator is determined by the equivalence
+// class to which the integer belongs, out of the left/right cossets
+// of zZ+, where 'z' is the number of possible primary generators, and
+// 'Z+' is the set of positive integers. I suppose we can also map
+// negative integer levels to specialized specific generators for
+// specific purposes. (Actually, negative integers would be perfect
+// for interior worldspaces, as opposed to overworld levels. In fact,
+// I'm now making it so that that is the case. Sweet. :D
+
+// Ignoring interior worldspaces for now, this means that in the case
+// of overworld levels, the levels get progressively more and more
+// warped the further a player descends through any specific
+// "biome". Forests progressively get more "foresty", and so on and so
+// forth for other "biomes" as well.
+
+// Actually, it might make more sense to treat consecutively visited
+// biomes of the same type to drive the "pathology" attribute. By
+// that, I mean tracking a separate pathology value for each biome,
+// and then incrementing/decrementing it when passing it through to
+// the generators. The logic for incrementing and decrementing is
+// simple: Increment the variable if the next level is in the same
+// equivalence class as the current one, and decrement the level, if
+// the next level is in a different equivalence class. Maybe also have
+// greater or lower decrements depending on the specific types of each
+// next biome relative to the current one. However, I'm getting ahead
+// of myself here.
+
 void Map::generateLevel(int level)
 {
-    // Allocate a completely empty level.
-    
+    // Allocate a completely empty level.	
     uint16_t **dt = new uint16_t*[LEVEL_HEIGHT];
 
     for(int i = 0; i < LEVEL_HEIGHT; ++i){
@@ -41,18 +81,62 @@ void Map::generateLevel(int level)
         }
     }
 
-    // Populare the level using the generation algorithms.
+    // Populate the level using the generation algorithms.
     growthAlgorithm(dt);
     // gableAlgorithm(dt);
     // graphAlgorithm(dt);
 
+    // Add level sign-posts and link points.
+    generateLevelLinks(dt);
+    
     // Free the old level and install the new one.
     if(layout != NULL){
         for(int i = 0; i < LEVEL_HEIGHT; ++i){
             delete [] layout[i];
         } delete [] layout;
     } layout = dt;
+}
+
+void Map::generateLevelLinks(uint16_t **data)
+{
+    int x = 0;
+	int y = 0;
+
+    static std::default_random_engine biomeTypeGenerator;
+    static std::uniform_int_distribution<int>
+        biomeTypeDistribution(0, NUM_BIOME_TYPES - 1);
+
+    auto biomeDice = std::bind(biomeTypeDistribution,
+                               biomeTypeGenerator);
+
+    LevelLink l;
     
+    for(int i = 0; i < 2; i++){
+		int counter = 0;
+		
+		while(true){
+			x = rand() % LEVEL_WIDTH;
+			y = rand() % LEVEL_HEIGHT;
+
+			if((data[y][x] & 1) == 0 ||
+			   counter >= 64){
+				data[y][x] = SIGN_POST | NOT_WALKABLE;
+				break;
+			} counter++;
+		}
+		
+		// getEmptyTileLoc(x, y, data);
+        
+        l.id = floor(currentLevel/NUM_BIOME_TYPES);
+        l.linkType = 0;
+        
+        l.id += NUM_BIOME_TYPES + biomeDice();
+
+        std::pair<int, int> tpos(y, x);
+        std::pair<std::pair<int, int>, LevelLink> link(tpos, l);
+        
+        levelLinks.insert(link);
+    }
 }
 
 //! Growth Algorithm -- Selects semi-random points on the environment
@@ -60,8 +144,8 @@ void Map::generateLevel(int level)
 //! select additional points to become limbs. Next, sample a
 //! semi-random number of already selected points to become roots, and
 //! for each of those roots, generate new limbs based on the
-//! surrounding environment. Repeat a target number of points has been
-//! selected. Mark those nodes as their final terrain type.
+//! surrounding environment. Repeat until a target number of points
+//! has been selected. Mark those nodes as their final terrain type.
 
 //! Knights Gable -- Select a semi-random collection of 6 points
 //! arranged in a hexagon around a 7th point. Based on the current and
@@ -334,9 +418,9 @@ void Map::graphAlgorithm(uint16_t **data)
 
 }
 
-void Map::loadLevelFromFile(int level)
+void Map::loadLevelFromFile(int level, int flag)
 {
-    std::string datadir = "./Data/level"
+    std::string datadir = "./Data/level";
     
     std::string tmp = "level";
     tmp.append(std::to_string(level) + ".dat");
@@ -346,22 +430,20 @@ void Map::loadLevelFromFile(int level)
     FILE *fd = fopen(lvl, "r");
     fseek(fd, 40, SEEK_SET);
 
-    uint16_t **tmp;
+    uint16_t **buffer;
 
     switch(flag){
-    case 0:
-        tmp = layout;
+    case LEVEL_ACTIVE_BUFF:
+        buffer = layout;
         break;
-    case 1:
-        tmp = storage[0].layout;
+    case LEVEL_PREV_BUFF:
+        buffer = storage[0].layout;
         break;
-    case 2:
-        tmp = storage[1].layout;
+    case LEVEL_NEXT_BUFF:
+        buffer = storage[1].layout;
     }
     
-    fread(tmp, sizeof(uint16_t), LEVEL_WIDTH*LEVEL_HEIGHT, fd);
-    
-    return METHOD_SUCCESS;
+    fread(buffer, sizeof(uint16_t), LEVEL_WIDTH*LEVEL_HEIGHT, fd);
 }
 
 void Map::flushStorage(int flag)
@@ -376,7 +458,13 @@ void Map::flushStorage(int flag)
 void Map::traverseLevel(int levelId)
 {
     if(levelId > deepestLevel){
-        // Generate new level.
+		// Generate level header and
+		// set it as member variable.
+		
+        // Generate new level using levelId.
+
+		
+		// Set deepestLevel to levelId.
     } else if(levelId == currentLevel ||
               levelId == 0){
         // Do nothing.
@@ -487,17 +575,23 @@ void Map :: render()
 
     int xdist;
     int ydist;
-    
+
+	int color_attr = 0;
+	
     for(int i = starty; i<endy && endy > 0; ++i){
         for(int j = startx; j<endx && endx>0; ++j){
             tile = layout[i][j];
 
+			color_attr = 0;
+			
             switch(tile){
             case EMPTY:
                 glyph = '.';
+				color_attr = 0;
                 break;
             case WALL:
                 glyph = '#';
+				color_attr = 2;
                 break;
             case DOOR:
                 glyph = 'H';
@@ -512,11 +606,17 @@ void Map :: render()
                 glyph = '+';
                 break;
             case NOT_WALKABLE:
-                glyph='#';
+                glyph='&';
+				color_attr = 3;
                 break;
             default:
                 glyph = '?';
             }
+
+			if(tile & SIGN_POST){
+				glyph = 'T';
+				color_attr = 1;
+			}
 
             xdist = j - target.targetX;
             ydist = i - target.targetY;
@@ -526,20 +626,74 @@ void Map :: render()
 
             if((xdist > 3 && xdist < COLS-4) &&
                (ydist > 2 && ydist < LINES-11)){
-                mvaddch(ydist, xdist, glyph);
+                mvaddch(ydist, xdist, glyph | COLOR_PAIR(color_attr));
             }
         }
     }
 }
+
+
+void handleEvent(MapEvent &mapEvent)
+{
+	mp::MapEvent e = mapEvent.eventtype;
+
+	switch(e){
+	case mp::GOTO_LEVEL:
+		traverseLevel.eventData.nextLevel;
+		spawner.spawnPlayer(&player);
+		startTracking(&player);
+		spawner.processLevelData(&map);
+		break;
+	default:
+		break;
+	}
+}
+
 
 // This method ONLY sets up the background environment and level
 // layout. entity placement is not handled here.
 
 //! Load a new chunk of the map.
 
-int Map::load(int level, int flag)
+int Map::load(int level)
 {
+    // Check to see if currentLevel exists as file. If not, save the
+    // current level as file.
 
+    std::string tmp = "level";
+    tmp.append(std::to_string(currentLevel));
+
+    const char *lvl = tmp.c_str();
+
+    FILE *fd = fopen(lvl, "r");
+
+    if(fd == NULL){
+        // File does not exist. Save current level to file.
+        dumpCurrentLevel();
+    } else {
+        fclose(fd);
+    } currentLevel = level;
+
+
+    // Check to see if the next level exists as file. If so, then load
+    // it directly. Otherwise, generate it.
+
+    tmp = "level";
+    tmp.append(std::to_string(level));
+
+    lvl = tmp.c_str();
+    fd = fopen(lvl, "r");
+
+    if(fd == NULL){
+        // File does not exist. Generate the level.
+        generateLevel(level);
+    } else {
+        // File does exist. Load level directly from file.
+        loadLevelFromFile(level, LEVEL_ACTIVE_BUFF);
+        fclose(fd);
+    } 
+    
+    return METHOD_SUCCESS;
 }
 
 void Map::setStateData(MapState *state, int spawnType)
@@ -549,9 +703,64 @@ void Map::setStateData(MapState *state, int spawnType)
     // or non-player entities.
 }
 
-void Map::collideStep(MapState *state)
-{
+// If this method is called, it's because some entity has decided
+// to attempt to move onto a map location that is not walkable,
+// for whatever reason. The map needs to determine the appropriate
+// course of action to take when this happens.
 
+// For example: If the entity is the player, and the player has
+// decided to move into a signpost, then the map needs to create a
+// signpost dialogue menu, set it as the active menu, and trigger
+// the dialogue game state. The signpost dialogue menu will either
+// return back to normal gamestate if the player cancels, or will
+// trigger a new level to load if the player confirms.
+
+// And then the entire game level shifts, and the player along
+// with it.
+
+// Alternatively, let's say that an npc or a monster decides to
+// move into a signpost. Then the map needs to let the spawner
+// know that this has happened, so that the spawner can handle
+// moving the npc/monster from one level to the next.
+
+// And all sorts of other things. Like, for example, if the tile
+// holds loot. Then the map needs to use the tile location to
+// lookup a list/vector/container of (probably item ids) to
+// maintain what items exist at that tile location.
+
+// Note: Entities, including the player, can't move onto tiles
+// with items on them. They can, however, pickup the items, or
+// move the items aside as they pass through.
+
+// Please note, however, that the map is not responsible for doing
+// anything with that information. It simply needs to have that
+// information on hand in case other entities or cages (AND THEY
+// WILL. ) request that data for their own purposes. :D
+
+int Map::collideStep(int x, int y, MapState *state)
+{
+	uint16_t tile = layout[y][x];
+
+	if(tile & SIGN_POST){
+		// Entity has moved into a sign-post.
+
+		// Call Sign_post Prompt:
+		// int choice = sign_post_prompt(x, y);
+
+		// Just true for now.
+		int choice = true;
+		
+		// if choice is yes, then travel by signpost. Else, do
+		// nothing.
+
+		if(choice){
+			mp::MapEvent mapEvent;
+			mapEvent.eventType = mp::EventType::GOTO_LEVEL;
+			mapEvent.eventData.nextLevel = getLevelFromSignPost(x, y);
+			handleEvent(mapEvent);
+		}
+		
+	}
 }
 
 // Get a random tile index in the map that matches tile within
@@ -562,15 +771,47 @@ void Map::getTileRand(uint16_t tile, int &y, int &x, int deviance)
     // Note: Deviance is ignored for now, and may be removed in the
     // future.
     
-    int tmpx, tmpy;
+    int tmpx;
+	int tmpy;
 
-    do{
+    int counter = 0;
+    uint16_t tmp;
+    
+    while(true){
         tmpx = rand() % LEVEL_WIDTH;
         tmpy = rand() % LEVEL_HEIGHT;
-    } while(layout[tmpy][tmpx] != tile);
+
+        tmp = layout[tmpy][tmpx] & 1;
+
+		// Technically we need to check whether the found layout
+		// tile matches the type in the "tile" parameter. But
+		// for now, just check to see if it is empty.
+		
+        if(tmp == 0){
+            break;
+        }
+    };
 
     y = tmpy;
     x = tmpx;
+}
+
+void Map::getEmptyTileLoc(int &y, int &x, uint16_t **data)
+{
+    int tmpx = 0;
+	int tmpy = 0;
+
+    int counter = 0;
+    uint16_t **tmp;
+
+	if(layout != NULL){
+		tmp = layout;
+	} else if(data != NULL){
+		tmp = data;
+	} else {
+		std::cerr << "Can't get empty tile! No level data found. Abort.";
+		exit(-1);
+	}
 }
 
 void Map::startTracking(Spawn *spawn)

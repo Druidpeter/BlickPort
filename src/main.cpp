@@ -53,12 +53,26 @@ std::list<Entity *> entities;
 
 Gui gui; // Head up Display controls.
 
+void init_pairs()
+{
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(3, COLOR_GREEN, COLOR_BLACK);
+}
+
 int main(int argc, char *argv[])
 {
-    std::srand(time(NULL));
-    
+	std::srand(time(NULL));
+
     setlocale(LC_ALL, "");
     initscr(); cbreak(); noecho();
+	
+	start_color();
+	init_pairs();
+
+	// std::cerr << "Max Colors: " << COLORS << "\n";
+	// std::cerr << "Max Color Pairs: " << COLOR_PAIRS << "\n";
+	
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE);
     

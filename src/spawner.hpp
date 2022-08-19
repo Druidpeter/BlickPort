@@ -40,6 +40,12 @@ public:
 
     void spawnPlayer(Spawn *spawn);
 
+	// We should change this function prototype so that the spawner
+	// receives ONLY encapsulated, fully generated, level data,
+	// instead of a reference to the map object itself. Better
+	// isolation that way.
+	
+	void processLevelData(Map *map);
     void calculateBiomes();
     
     void event(){};

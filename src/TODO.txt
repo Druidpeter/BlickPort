@@ -1,31 +1,23 @@
 -- TODO.txt --
 
-1. Rework the codebase so that the game starts at level 1, the level
-is properly displayed. And controller input causes the target and
-player to move. Just use the target image for both the player and the
-target sprite. There's no need to deal with animations quite yet. (COMPLETE)
+Currently working on setting up level traversal. The
+map::generateLevelLinks() method currently is implemented such that it
+changes two tiles on the map to be of type SIGNPOST.
 
-1.1 create new aux executable to generate player animation.dat
-file. Have renderdata factory properly create the renderdata on
-request using data loaded from animation file, and insert into player
-spawn entity. Check to make sure that the animation runs smoothly and
-everything is in order BEFORE trying to set-up player-map collision
-logic. (IN PROGRESS)
+I still need, however, to do the following:
 
-2. Implement player entry into the map and 2D world physics. Collision
-against the map should work well. Still no need for animations.
+1. Change map::render() to check for SIGN_POST tile type, and render
+the appropriate glyph.
 
-3. Implement entity entry into the map and basic entity behavior for
-the different types of entites: e.g. enemies, items, map switches,
-letters. The logic doesn't need to be fully realized at this
-stage. Just something to bootstrap off of.
+2. Also refactor map::render() so that checking between walkable and
+non-walkable tiles is different from checking between the various
+different types of non-walkable tiles. (e.g. The current algorithm
+just places '#' on non-walkable tiles. We need now to discriminate
+between what actual objects can be placed on the map, et al.)
 
-4. Implement transitions between all game stages. E.g. between levels,
-menus, and exit conditions.
-
-5. Implement sprite animation system and corresponding animations +
-soundbank, et al.
-
-6. Flesh out and prepare to finalize entity behaviour logic.
-
-7. Finalize, apply polish, repeat.
+3. Probably also need to audit the tile data bitmaps, export their
+defines to a separate header file, and mop up the comments so that a
+proper explanation for how map tile types work is available as comment
+documentation in said header file. This is pretty important, as the
+codebase is starting to get quite sophisticated, now that we're
+starting to bootstrap game specific features.

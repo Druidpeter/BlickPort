@@ -13,7 +13,9 @@ void Spawner::spawnPlayer(Spawn *spawn)
 {
     MapState *state = static_cast<MapState *>(spawn->getState(MAP_STATE));
 
-    int x, y;
+    int x;
+	int y;
+	
     map->getTileRand(EMPTY, y, x, 0);
 
     state->position.x = x;
@@ -21,6 +23,15 @@ void Spawner::spawnPlayer(Spawn *spawn)
 
     // Additional state may be set, but for now, we just want psoition
     // and the control variables.
+}
+
+void processLevelData(Map *map)
+{
+	// Here we should receive or somehow acquire the fully generated
+	// data from a single level. The spawner needs to take a look at
+	// the data and from it calculate what kind of spawns should be
+	// generated, to what extent, where to place them, various aspects
+	// regardings basic spawn interactions, movements, travel, et al.
 }
 
 void Spawner::calculateBiomes()

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/blickport.dir/blickport.cpp.o CMakeFiles/blickport.dir/entity.cpp.o CMakeFiles/blickport.dir/main.cpp.o CMakeFiles/blickport.dir/map.cpp.o CMakeFiles/blickport.dir/menu.cpp.o CMakeFiles/blickport.dir/spawner.cpp.o CMakeFiles/blickport.dir/state.cpp.o -o blickport  -lncurses 
