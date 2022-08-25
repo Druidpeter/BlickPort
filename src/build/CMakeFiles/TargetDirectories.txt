@@ -1,3 +1,0 @@
-/home/owner/projects/BlickPort/src/build/CMakeFiles/rebuild_cache.dir
-/home/owner/projects/BlickPort/src/build/CMakeFiles/edit_cache.dir
-/home/owner/projects/BlickPort/src/build/CMakeFiles/blickport.dir
