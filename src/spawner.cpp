@@ -25,7 +25,7 @@ void Spawner::spawnPlayer(Spawn *spawn)
     // and the control variables.
 }
 
-void processLevelData(Map *map)
+void Spawner::processLevelData(Map *map)
 {
 	// Here we should receive or somehow acquire the fully generated
 	// data from a single level. The spawner needs to take a look at

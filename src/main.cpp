@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 
     echo();
     intrflush(stdscr, TRUE);
-    
+	endwin();
+	
     return 0;
 }

@@ -22,8 +22,13 @@
 #include "blickport.hpp"
 #include "map.hpp"
 #include "types.hpp"
+#include "map_event.hpp"
+#include "spawner.hpp"
 
 #include "includes/quadtree/Vector2.h"
+
+extern Map map;
+extern Spawner spawner;
 
 /* Private Methods */
 
@@ -505,6 +510,13 @@ void Map::dumpCurrentLevel()
     
 }
 
+int Map::getLevelFromSignPost(int x, int y)
+{
+	// Definitely need to properly implement this. Just do 5 for now.
+	
+	return 5;
+}
+
 /* Public Methods */
 
 Map :: Map()
@@ -633,13 +645,19 @@ void Map :: render()
 }
 
 
-void handleEvent(MapEvent &mapEvent)
+void Map::handleEvent(mp::MapEvent &mapEvent)
 {
-	mp::MapEvent e = mapEvent.eventtype;
+	mp::MapEvent e = mapEvent;
 
-	switch(e){
+	switch(e.eventType){
 	case mp::GOTO_LEVEL:
-		traverseLevel.eventData.nextLevel;
+		// Note: TraverseLevel is not yet implemented, so instead of
+		// spawning the player into a new level, the spawner basically
+		// just teleports the player onto a random empty space within
+		// the current level. This will be resolved as soon as level
+		// traversal is actually implemented.
+		
+		traverseLevel(e.eventData.nextLevel);
 		spawner.spawnPlayer(&player);
 		startTracking(&player);
 		spawner.processLevelData(&map);
@@ -759,8 +777,9 @@ int Map::collideStep(int x, int y, MapState *state)
 			mapEvent.eventData.nextLevel = getLevelFromSignPost(x, y);
 			handleEvent(mapEvent);
 		}
-		
 	}
+
+	return 0;
 }
 
 // Get a random tile index in the map that matches tile within

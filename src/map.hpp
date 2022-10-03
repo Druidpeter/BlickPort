@@ -195,7 +195,7 @@ private:
     void dumpCurrentLevel();
     void traverseLevel(int levelId);
 
-	void getLevelFromSignPost(int x, int y);
+	int getLevelFromSignPost(int x, int y);
 public:
     // Getters and Setters
     int getCurrentLevel(){return currentLevel; }
@@ -210,7 +210,7 @@ public:
     virtual void update();
     virtual void render();
 
-	void handleEvent(MapEvent &mapEvent);
+	void handleEvent(mp::MapEvent &mapEvent);
   
     int load(int level);
     void setStateData(MapState *state, int spawnType);

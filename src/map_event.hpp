@@ -14,7 +14,7 @@ namespace mp{
 
 	struct GoToLevelData{
 		int nextLevel;
-	}
+	};
 	
     union EventData{
 		int nextLevel;
@@ -24,7 +24,7 @@ namespace mp{
 	struct MapEvent{
 		EventType eventType;
 		EventData eventData;
-	}
+	};
 }
 
 #endif
