@@ -187,10 +187,20 @@ struct LevelHeader{
 
 struct LevelStorage{
     int levelId;
-    uint16_t **layout;
 
+	// Right now, level sizes are hardcoded, but we will eventually
+	// set them dynamically on for different biome and interior level
+	// types. Hence, we need to store them so that we can retrieve
+	// level layouts properly, as we can't guarantee that all level
+	// files will have the same size levels.
+	
+	int levelWidth;
+	int levelHeight;
+	
 	LevelHeader levelHeader;
 	std::map<std::pair<int, int>, LevelLink> levelLinks;
+public:
+	LevelStorage(): levelWidth(LEVEL_WIDTH), levelHeight(LEVEL_HEIGHT){}
 };
 
 class Map : public Cage {
@@ -214,7 +224,7 @@ private:
     void growthAlgorithm(uint16_t **data);
     void gableAlgorithm(uint16_t **data);
     void graphAlgorithm(uint16_t **data);
-    void loadLevelFromFile(int level);
+    int loadLevelFromFile(int level);
     void flushStorage();
     void dumpCurrentLevel();
     void traverseLevel(LevelLink link);

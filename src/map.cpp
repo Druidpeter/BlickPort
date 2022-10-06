@@ -85,6 +85,8 @@ void Map::generateLevel(int level)
 
 void Map::generateLevel(int level, LevelLink link)
 {
+	levelHeader.levelType = 0; // Just ignore for now.
+	
     // Allocate a completely empty level.	
     uint16_t **dt = new uint16_t*[LEVEL_HEIGHT];
 
@@ -142,10 +144,8 @@ void Map::generateLevelLinks(uint16_t **data, LevelLink link)
 		
 		// getEmptyTileLoc(x, y, data);
 
-        l.id = floor(currentLevel/NUM_BIOME_TYPES);
+        l.id = std::abs(currentLevel + 3 + biomeDice() - biomeDice());
         l.linkType = 0;
-        
-        l.id += NUM_BIOME_TYPES + biomeDice();
 
         std::pair<int, int> tpos(y, x);
         std::pair<std::pair<int, int>, LevelLink> link(tpos, l);
@@ -464,7 +464,7 @@ void Map::graphAlgorithm(uint16_t **data)
 
 }
 
-void Map::loadLevelFromFile(int level)
+int Map::loadLevelFromFile(int level)
 {
 	// I originally thought that just putting the LevelStorage member
 	// variable into a void * would handle everything automagically,
@@ -488,6 +488,11 @@ void Map::loadLevelFromFile(int level)
 
 	int lvlfd = open(filePath.c_str(), O_RDONLY);
 
+	if(lvlfd == -1){
+		// File did not exist! We need to generate it!
+		return -1;
+	}
+	
 	LevelStorage tmpStorage;
 	
 	int numBytesRead = read(lvlfd, &tmpStorage, sizeof(tmpStorage));
@@ -497,10 +502,28 @@ void Map::loadLevelFromFile(int level)
 
 	currentLevel = tmpStorage.levelId;
 	levelHeader.levelType = tmpStorage.levelHeader.levelType;
-	layout = tmpStorage.layout;
 	levelLinks = tmpStorage.levelLinks;
+	
+	uint16_t **dt = new uint16_t*[tmpStorage.levelHeight];
 
+	for(int i = 0; i < tmpStorage.levelHeight; ++i){
+		dt[i] = new uint16_t[tmpStorage.levelWidth];
+
+		for(int j = 0; j < tmpStorage.levelWidth; ++j){
+			numBytesRead = read(lvlfd, &(dt[i][j]), sizeof(uint16_t));
+		}
+	}
+	
+	if(layout != NULL){
+		for(int i = 0; i < LEVEL_HEIGHT; ++i){
+			delete [] layout[i];
+		} delete [] layout;
+	} layout = dt;
+	
 	close(lvlfd);
+
+	// Just return any value that's not -1.
+	return 0;
 }
 
 void Map::flushStorage()
@@ -520,25 +543,39 @@ void Map::flushStorage()
 	} else {
 		std::cerr << "Flushed " << written << " bytes to file.\n";		
 	}
+
+	for(int i = 0; i < LEVEL_HEIGHT; ++i){
+		for(int j = 0; j < LEVEL_WIDTH; ++j){
+			written = write(lvlfd, &(layout[i][j]), sizeof(uint16_t));
+		}
+
+	}
+
+	if(written == -1){
+		std::cerr << "Error writing to file: errno = " << errno << " \n";
+	} else {
+		std::cerr << "Flushed " << written << " bytes to file.\n";		
+	}
 	
 	close(lvlfd);
 }
 
 void Map::traverseLevel(LevelLink link)
 {
-	static const int PREV_LEVEL = 0;
 	LevelStorage *st;
-	
-    if(link.id > deepestLevel){
-		flushStorage();
-		
+
+	// Try to load the level from file first. If no file can be found,
+	// then we know that we need to generate a new level instead.
+
+	if(loadLevelFromFile(link.id) == -1){
 		st = &storage;
 		
 		st->levelId = currentLevel;
 		st->levelHeader = levelHeader;
-		st->layout = layout;
 		st->levelLinks = levelLinks;
 
+		flushStorage();
+		
 		// Generate level header and
 		// set it as member variable.
 
@@ -555,22 +592,13 @@ void Map::traverseLevel(LevelLink link)
 		
 		// Set deepestLevel to levelId.
 
-		deepestLevel = currentLevel;
-
-		return;
-    } else if(link.id == currentLevel ||
-              link.id == 0){
-        // Do nothing.
-        return;
-    }
-
-    // Load level from storage or file.
-	loadLevelFromFile(link.id);
+		deepestLevel = currentLevel;		
+	}
 }
 
 void Map::dumpCurrentLevel()
 {
-    
+    // This method is depreciated, and shall be removed.
 }
 
 void Map::getLevelFromSignPost(int x, int y, LevelLink *levelLink)
