@@ -60,6 +60,13 @@ void init_pairs()
 	init_pair(3, COLOR_GREEN, COLOR_BLACK);
 }
 
+void cleanUp()
+{
+	echo();
+    intrflush(stdscr, TRUE);
+	endwin();
+}
+
 int main(int argc, char *argv[])
 {
 	std::srand(time(NULL));
@@ -75,14 +82,14 @@ int main(int argc, char *argv[])
 	
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE);
-    
+
+	atexit(cleanUp);
+	
     blickPort.handleOptions(argc, argv);
     blickPort.execute();
     blickPort.cleanUp();
 
-    echo();
-    intrflush(stdscr, TRUE);
-	endwin();
+	cleanUp();
 	
     return 0;
 }

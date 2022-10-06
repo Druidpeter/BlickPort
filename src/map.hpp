@@ -120,10 +120,28 @@ struct Target{
     int targetMaxVel;
 };
 
-struct LevelStorage{
-    int levelId;
-    uint16_t **layout;
-};
+//////////////////
+// HOW BIOMES WORK
+////////////////
+
+// So, basically the way this all works is that each level has an
+// integer id associated with it. We divide these integer ids into
+// equivalence classes, based off of divisibility by
+// NUM_BIOME_TYPES. So, all plains integers will have (id %
+// NUM_BIOME_TYPES == 0) and so on and so forth for each BiomeType.
+
+// It's immportant to understand that newly created levels are always
+// given a level id that is strictly greater than all previously
+// generated level ids. If we're going to a new region of the world
+// that we haven't been before, the game is only aware of this because
+// the level id will be greater than the last greatest previously
+// known level id.
+
+// This means that we shouldn't rely on ids ascending in a stricly
+// incremental fashion. It also means that the maximum number of
+// levels we can possibly traverse to is (INT_MAX / NUM_BIOME_TYPES) +
+// (INT_MAX / NUM_INTERIOR_TYPES) = approx 195 million exterior levels
+// + 268 million interior levels. So... plenty of space.
 
 enum BiomeType{
     PLAINS,
@@ -156,11 +174,6 @@ struct BiomeStats{
     int biomePathologies[NUM_BIOME_TYPES];
 };
 
-struct LevelLink{
-    int id;
-    int linkType; // 0 -> Biome, 1 -> Interior
-};
-
 struct LevelHeader{
 	// Basically, stuff about the level that is useful for
 	// generation. Biome type, whether it's an interior or exterior
@@ -168,11 +181,21 @@ struct LevelHeader{
 
 	// Should have done this to begin with instead of trying to be
 	// "clever".
+
+	int levelType;
+};
+
+struct LevelStorage{
+    int levelId;
+    uint16_t **layout;
+
+	LevelHeader levelHeader;
+	std::map<std::pair<int, int>, LevelLink> levelLinks;
 };
 
 class Map : public Cage {
     uint16_t **layout;
-    LevelStorage storage[2];
+    LevelStorage storage;
     std::map<std::pair<int, int>, LevelLink> levelLinks;
 
 	LevelHeader levelHeader; //<- Should have done this to begin with.
@@ -185,17 +208,18 @@ class Map : public Cage {
 private:
     friend class Spawner;
 private:
-    void generateLevel(int level);
-    void generateLevelLinks(uint16_t **data);
+	void generateLevel(int level);
+	void generateLevel(int level, LevelLink link);
+    void generateLevelLinks(uint16_t **data, LevelLink link);
     void growthAlgorithm(uint16_t **data);
     void gableAlgorithm(uint16_t **data);
     void graphAlgorithm(uint16_t **data);
-    void loadLevelFromFile(int level, int flag);
-    void flushStorage(int flag);
+    void loadLevelFromFile(int level);
+    void flushStorage();
     void dumpCurrentLevel();
-    void traverseLevel(int levelId);
+    void traverseLevel(LevelLink link);
 
-	int getLevelFromSignPost(int x, int y);
+	void getLevelFromSignPost(int x, int y, LevelLink *levelLink);
 public:
     // Getters and Setters
     int getCurrentLevel(){return currentLevel; }

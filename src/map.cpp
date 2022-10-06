@@ -11,6 +11,7 @@
 #include <string>
 #include <queue>
 #include <functional>
+#include <cstdlib>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -75,6 +76,15 @@ extern Spawner spawner;
 
 void Map::generateLevel(int level)
 {
+	LevelLink nonLink;
+	nonLink.id = -1;
+	nonLink.linkType = -1;
+
+	generateLevel(level, nonLink);
+}
+
+void Map::generateLevel(int level, LevelLink link)
+{
     // Allocate a completely empty level.	
     uint16_t **dt = new uint16_t*[LEVEL_HEIGHT];
 
@@ -92,7 +102,7 @@ void Map::generateLevel(int level)
     // graphAlgorithm(dt);
 
     // Add level sign-posts and link points.
-    generateLevelLinks(dt);
+    generateLevelLinks(dt, link);
     
     // Free the old level and install the new one.
     if(layout != NULL){
@@ -102,7 +112,7 @@ void Map::generateLevel(int level)
     } layout = dt;
 }
 
-void Map::generateLevelLinks(uint16_t **data)
+void Map::generateLevelLinks(uint16_t **data, LevelLink link)
 {
     int x = 0;
 	int y = 0;
@@ -131,7 +141,7 @@ void Map::generateLevelLinks(uint16_t **data)
 		}
 		
 		// getEmptyTileLoc(x, y, data);
-        
+
         l.id = floor(currentLevel/NUM_BIOME_TYPES);
         l.linkType = 0;
         
@@ -142,6 +152,37 @@ void Map::generateLevelLinks(uint16_t **data)
         
         levelLinks.insert(link);
     }
+
+	// We need to add a level link connecting this level with the one
+	// it came from. Just brute force copy-paste for now. Refactor
+	// eventually. Maybe. It's not really a performance critical part
+	// of the code, really.
+
+	// But first, test whether our given level link is valid or not.
+	// Sometimes, we have a dummyLink, and hence no levelLink should
+	// *actually* be generated.
+
+	if(link.id == -1){
+		// No need to create dummy link!
+		return;
+	}
+	
+	int counter = 0;
+		
+	while(true){
+		x = rand() % LEVEL_WIDTH;
+		y = rand() % LEVEL_HEIGHT;
+
+		if((data[y][x] & 1) == 0 ||
+		   counter >= 64){
+			data[y][x] = SIGN_POST | NOT_WALKABLE;
+			break;
+		} counter++;
+	}
+
+	std::pair<int, int> tpos(y, x);
+	std::pair<std::pair<int, int>, LevelLink> previousLevel(tpos, link);
+	levelLinks.insert(previousLevel);
 }
 
 //! Growth Algorithm -- Selects semi-random points on the environment
@@ -423,86 +464,108 @@ void Map::graphAlgorithm(uint16_t **data)
 
 }
 
-void Map::loadLevelFromFile(int level, int flag)
+void Map::loadLevelFromFile(int level)
 {
-    std::string datadir = "./Data/level";
-    
-    std::string tmp = "level";
-    tmp.append(std::to_string(level) + ".dat");
+	// I originally thought that just putting the LevelStorage member
+	// variable into a void * would handle everything automagically,
+	// but it looks like that wasn't the case.
 
-    const char *lvl = tmp.c_str();
+	// So, new plan, flushing storage to file and fetching it back
+	// means doing so for each member variable inside Map::storage. We
+	// need to take care to dereference and rereference properly the
+	// double pointer that is the map layout, because that right there
+	// is precisely the point where shit is hitting the fan.
 
-    FILE *fd = fopen(lvl, "r");
-    fseek(fd, 40, SEEK_SET);
+	// Sucks that we have to do it that way, but it is what it is. I'm
+	// just glad it was caught early, as opposted to later on down the
+	// line. This is what gdb is FOR, people!!
+	
+    std::string baseDataPath = "./Data/levels/lvl";
+	std::string path_lvl = std::to_string(level);
+	std::string path_suffix = ".dat";
 
-    uint16_t **buffer;
+	std::string filePath = baseDataPath + path_lvl + path_suffix;
 
-    switch(flag){
-    case LEVEL_ACTIVE_BUFF:
-        buffer = layout;
-        break;
-    case LEVEL_PREV_BUFF:
-        buffer = storage[0].layout;
-        break;
-    case LEVEL_NEXT_BUFF:
-        buffer = storage[1].layout;
-    }
-    
-    fread(buffer, sizeof(uint16_t), LEVEL_WIDTH*LEVEL_HEIGHT, fd);
+	int lvlfd = open(filePath.c_str(), O_RDONLY);
+
+	LevelStorage tmpStorage;
+	
+	int numBytesRead = read(lvlfd, &tmpStorage, sizeof(tmpStorage));
+	std::cerr << "Have read " << numBytesRead << "bytes.\n";
+
+	levelLinks.clear();
+
+	currentLevel = tmpStorage.levelId;
+	levelHeader.levelType = tmpStorage.levelHeader.levelType;
+	layout = tmpStorage.layout;
+	levelLinks = tmpStorage.levelLinks;
+
+	close(lvlfd);
 }
 
-void Map::flushStorage(int flag)
+void Map::flushStorage()
 {
-    if(flag == 1){
-        // Flush storage[0]
-    } else if(flag == -1){
-        // Flush storage[1]
-    }
+	std::string baseDataPath = "./Data/levels/lvl";
+	std::string path_lvl = std::to_string(storage.levelId);
+	std::string path_suffix = ".dat";
+
+	std::string filePath = baseDataPath + path_lvl + path_suffix;
+
+	int lvlfd = open(filePath.c_str(), O_WRONLY | O_CREAT);
+
+	int written = write(lvlfd, &storage, sizeof(storage));
+
+	if(written == -1){
+		std::cerr << "Error writing to file: errno = " << errno << " \n";
+	} else {
+		std::cerr << "Flushed " << written << " bytes to file.\n";		
+	}
+	
+	close(lvlfd);
 }
 
-void Map::traverseLevel(int levelId)
+void Map::traverseLevel(LevelLink link)
 {
-    if(levelId > deepestLevel){
+	static const int PREV_LEVEL = 0;
+	LevelStorage *st;
+	
+    if(link.id > deepestLevel){
+		flushStorage();
+		
+		st = &storage;
+		
+		st->levelId = currentLevel;
+		st->levelHeader = levelHeader;
+		st->layout = layout;
+		st->levelLinks = levelLinks;
+
 		// Generate level header and
 		// set it as member variable.
-		
-        // Generate new level using levelId.
 
+		levelHeader.levelType = link.linkType;		
+		currentLevel = link.id;
+		levelLinks.clear();
+
+		LevelLink pl;
+		pl.id = st->levelId;
+		pl.linkType = st->levelHeader.levelType;
+		
+		// Generate new level.
+		generateLevel(currentLevel, pl);
 		
 		// Set deepestLevel to levelId.
-    } else if(levelId == currentLevel ||
-              levelId == 0){
+
+		deepestLevel = currentLevel;
+
+		return;
+    } else if(link.id == currentLevel ||
+              link.id == 0){
         // Do nothing.
         return;
     }
 
     // Load level from storage or file.
-
-    if(levelId == currentLevel+1){
-        // Flush storage[0] to file.
-        
-        // Store currentlevel in storage[0]
-
-        // Restore storage[1] to layout.
-
-        // Fetch from file into storage[1],
-        // if possible.
-    } else if(levelId == currentLevel-1){
-        // Flush storage[1] to file.
-        
-        // Store currentlevel in storage[1]
-
-        // Restore storage[0] to layout.
-
-        // Fetch from file into storage[0],
-        // if possible.
-    } else {
-        // Fetch levelId from file to layout.
-
-        // Fetch from file into storage[0] and
-        // storage[1] levelId-1 and levelId+1,
-        // respectively, if possible.
-    }
+	loadLevelFromFile(link.id);
 }
 
 void Map::dumpCurrentLevel()
@@ -510,11 +573,22 @@ void Map::dumpCurrentLevel()
     
 }
 
-int Map::getLevelFromSignPost(int x, int y)
+void Map::getLevelFromSignPost(int x, int y, LevelLink *levelLink)
 {
-	// Definitely need to properly implement this. Just do 5 for now.
+	std::pair<int, int> key(y, x);
 	
-	return 5;
+	try{
+		LevelLink tmp = levelLinks.at(key);
+
+		levelLink->id = tmp.id;
+		levelLink->linkType = tmp.linkType;
+
+		return;
+		
+	} catch (const std::out_of_range &e){
+		std::cerr << "Can't find LevelLink from given Signpost coordinates. How odd.\n";
+		exit(EXIT_FAILURE);
+	}
 }
 
 /* Public Methods */
@@ -707,7 +781,7 @@ int Map::load(int level)
         generateLevel(level);
     } else {
         // File does exist. Load level directly from file.
-        loadLevelFromFile(level, LEVEL_ACTIVE_BUFF);
+        loadLevelFromFile(level);
         fclose(fd);
     } 
     
@@ -774,7 +848,7 @@ int Map::collideStep(int x, int y, MapState *state)
 		if(choice){
 			mp::MapEvent mapEvent;
 			mapEvent.eventType = mp::EventType::GOTO_LEVEL;
-			mapEvent.eventData.nextLevel = getLevelFromSignPost(x, y);
+			getLevelFromSignPost(x, y, &(mapEvent.eventData.nextLevel));
 			handleEvent(mapEvent);
 		}
 	}

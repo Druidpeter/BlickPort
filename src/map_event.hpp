@@ -7,18 +7,18 @@
 #ifndef __blickport__map_event__
 #define __blickport__map_event__
 
+struct LevelLink{
+    int id;
+    int linkType; // 0 -> Biome, 1 -> Interior
+};
+
 namespace mp{
     enum EventType{
 		GOTO_LEVEL,
     };
-
-	struct GoToLevelData{
-		int nextLevel;
-	};
 	
     union EventData{
-		int nextLevel;
-        GoToLevelData goToLevelData;
+		LevelLink nextLevel;
     };
 
 	struct MapEvent{
