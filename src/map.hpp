@@ -118,6 +118,20 @@ struct Target{
     int targetVelY;
 
     int targetMaxVel;
+public:
+	// methods that follow the naming convention of
+	// "getNew<something><dataType>()" return heap-allocated data that
+	// should always be freed by whatever method calls it.
+	int *getNewViewportArray(){
+		int *tmp = new int[4];
+
+		tmp[0] = targetX - COLS/2;
+		tmp[1] = targetX + COLS/2;
+		tmp[2] = targetY - LINES/2;
+		tmp[3] = targetY - LINES/2;
+
+		return tmp;
+	};
 };
 
 //////////////////
@@ -183,6 +197,8 @@ struct LevelHeader{
 	// "clever".
 
 	int levelType;
+	int levelWidth;
+	int levelHeight
 };
 
 struct LevelStorage{
@@ -260,6 +276,9 @@ public:
     // Get a random tile index in the map that matches tile within
     // deviance.
     void getTileRand(uint16_t tile, int &y, int &x, int deviance);
+
+	// Sample tiles from map using a uniform random distribution.
+	void getTileRand(int &y, int &x);
 
     void getEmptyTileLoc(int &y, int &x, uint16_t **data);
 

@@ -1,23 +1,64 @@
 -- TODO.txt --
 
-Currently working on setting up level traversal. The
-map::generateLevelLinks() method currently is implemented such that it
-changes two tiles on the map to be of type SIGNPOST.
+General current considerations:
 
-I still need, however, to do the following:
+So, we are going to keep our system of having the entities list be a
+globally accessible data structure. Hence, all entity data can be
+accessed from all cages, and the cages can access the state_data
+specific to themselves during update processing. However, this also
+permits cages to "cross access" state data that belongs to other cages
+in a controlled fashion.
 
-1. Change map::render() to check for SIGN_POST tile type, and render
-the appropriate glyph.
+We really want this because cages have the ability to communicate with
+each other in a cageStack.
 
-2. Also refactor map::render() so that checking between walkable and
-non-walkable tiles is different from checking between the various
-different types of non-walkable tiles. (e.g. The current algorithm
-just places '#' on non-walkable tiles. We need now to discriminate
-between what actual objects can be placed on the map, et al.)
+Right now, we're still kind of working on developing much of the logic
+for all of the processing that goes on during the runtime in whatever
+level that is currently loaded during playtime. e.g. The level that
+the player is actively playing on.
 
-3. Probably also need to audit the tile data bitmaps, export their
-defines to a separate header file, and mop up the comments so that a
-proper explanation for how map tile types work is available as comment
-documentation in said header file. This is pretty important, as the
-codebase is starting to get quite sophisticated, now that we're
-starting to bootstrap game specific features.
+However, we will eventually want to enable background processing for
+non-player inhabited levels that have been flushed to file. The way we
+will be doing this is that we will have a special factory object
+called "CageStack", that essentially constructions and initializes a
+special implementation of all the cages that are used during runtime
+mainLoop processing.
+
+Cagestacks are also able to load data from files into their cages, and
+then initiate a separate simulation loop(s) for various queried time
+ranges. This essentially enables background processing of unloaded
+levels from file, where the player is not currently active on that
+dungone level.
+
+Doing things this way enables up to implement alternative "simplified"
+logic that uses all sorts of otimization tricks when processing data
+that the player isn't on. We don't actually have to run the simulation
+at as in-depth of a level as the runtime does. This will help us
+really create a strong illusion of an immersive and sophisticated game
+world.
+
+In addition to this, doing things this way also provides some insight
+for how we are going to implement journalBoxes and ChatterBoxes.
+
+ChatterBoxes are essentially encapsulated dialogue objects. They are
+not components, but rather cages of cages. Their design goal is to be
+able to take entity data, a hinting data object, and by accessing cage
+data formulate human-readable in-game dialogue text.
+
+You might think of this as having an object in the game world which is
+designed to be able to talk about systems in the game world from the
+perspective of an NPC. All NPCs with Chatter and Journal state data
+are capable of accessing chatterboxes and journalboxes, and therefore
+chatting with other similarly priviliged NPCs, the player, and also
+writing and reading letters to/from other similarly privileged NPCs
+and the player.
+
+Of course, we are not *actually* going to run this simulation fully at
+the low resolution detail one would think. NPCs have a mechanism for
+communicating with each other that is divorced from the chatterbox and
+journalbox functionalities. The chatterbox and journalbox objects are
+only there in instances where the player is privy to the
+communication, and we need to maintain the illusion of a living,
+breathing world. Hence, inter-NPC communication is only run through
+the chatter/journal box system when necessary, and is handled through
+greatly simplified mechanisms in other cases.

@@ -10,27 +10,36 @@
 #include <map>
 
 #include "cage.hpp"
+#include "state.hpp"
 
 class Map;
 
+// Spawn Rates for different types of entities:
+
+// SMUGBOAR -> 1/15 ticks.
+
 namespace sp{
     enum SpawnType{
-        FIELD_MOUSE
+        SMUGBOAR,
+		NUM_SPAWN_TYPES
     };
 }
 
 class Spawner : public Cage{
-    Map *map;
+    Map *map
+   
+    std::map<sp::SpawnType, double> spawnRates;
 
-    // 'rate' is the ratio of
-    // [(# spawns)/(# ticks)]*10000;
-    
-    // We do it this way to preserve precision,
-    // but this also means that when using the
-    // value as a 'ratio' we need to divide the
-    // rate by 10,000 first before using it.
-    
-    std::map<sp::SpawnType, int> spawnRates;
+	// When processing the map, we need to generate a list of
+	// spawnable creatures, and store their ids in a freshly allocated
+	// 1D array of size numSpawnable.
+	int *spawns;
+
+	// For any given map, only a subset of the total number of
+	// spawnable entities will actually be spawnable for that map.
+	int numSpawnable;
+private:
+	void generateSpawn(sp::SpawnType spawnType, int amount);
 public:
     Spawner(Map *map){
         this->map = map;
@@ -39,7 +48,9 @@ public:
     virtual ~Spawner(){};
 
     void spawnPlayer(Spawn *spawn);
-
+	void setSpawnData(SpawnState *state, int spawnType);
+	
+	
 	// We should change this function prototype so that the spawner
 	// receives ONLY encapsulated, fully generated, level data,
 	// instead of a reference to the map object itself. Better
@@ -49,7 +60,7 @@ public:
     void calculateBiomes();
     
     void event(){};
-    void update();
+    virtual void update();
     void render(){};
 };
 

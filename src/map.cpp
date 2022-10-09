@@ -85,7 +85,12 @@ void Map::generateLevel(int level)
 
 void Map::generateLevel(int level, LevelLink link)
 {
-	levelHeader.levelType = 0; // Just ignore for now.
+	// Eventually, this method should be refactored to accept a
+	// LevelHeader object as the first argument.
+	
+	levelHeader.levelType = level % NUM_BIOME_TYPES;
+	levelHeader.levelWidth = LEVEL_WIDTH;
+	levelHeader.levelHeight = LEVEL_HEIGHT;
 	
     // Allocate a completely empty level.	
     uint16_t **dt = new uint16_t*[LEVEL_HEIGHT];
@@ -626,6 +631,10 @@ Map :: Map()
     layout = NULL;
     currentLevel = 0;
 
+	levelHeader.levelType = 0;
+	levelHeader.levelWidth = 0;
+	levelHeader.levelWidth = 0;
+
     target.targetX = LEVEL_WIDTH/2;
     target.targetY = LEVEL_HEIGHT/2;
     target.targetVelX = 0;
@@ -915,6 +924,26 @@ void Map::getTileRand(uint16_t tile, int &y, int &x, int deviance)
 
     y = tmpy;
     x = tmpx;
+}
+
+void Map::getTileRand(int &y, int &x)
+{
+	static std::default_random_engine mapWidthGenerator;
+	static std::uniform_int_distribution<int>
+		mapWidthDistribution(0, levelHeader.levelWidth);
+
+	static std::default_random_engine mapHeightGenerator;
+	static std::uniform_int_distribution<int>
+		mapHeightDistribution(0, levelHeader.levelHeight);
+
+	auto mwDice = std::bind(mapWidthGenerator,
+							mapWidthDistribution);
+
+	auto mhDice = std::bind(mapHeightGenerator,
+							mapHeightDistribution);
+
+	y = mhDice();
+	x = mwDice();
 }
 
 void Map::getEmptyTileLoc(int &y, int &x, uint16_t **data)

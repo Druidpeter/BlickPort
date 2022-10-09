@@ -119,6 +119,8 @@ class Spawn : protected Entity{
     int isMove[2]; //!< Index 0 = movement on x axis. Index 1 =
                    //!< movement on y axis.
     int isJump;
+
+	friend class Spawner;
 protected:
     int spawnType;
     RenderData *data;
