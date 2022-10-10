@@ -102,7 +102,7 @@ struct SpawnState : public State{
 
 public:
 	virtual void initialize(int spawnType){};
-	virtual int update(Spawn *entiity){};
+	virtual int update(Spawn *entiity){ return false; };
 	
     void event(EventId id, EventData data);
     void setBaseStats(EventData edata); 

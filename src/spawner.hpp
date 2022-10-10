@@ -26,9 +26,9 @@ namespace sp{
 }
 
 class Spawner : public Cage{
-    Map *map
+    Map *map;
    
-    std::map<sp::SpawnType, double> spawnRates;
+    std::map<int, double> spawnRates;
 
 	// When processing the map, we need to generate a list of
 	// spawnable creatures, and store their ids in a freshly allocated

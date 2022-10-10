@@ -31,6 +31,17 @@
 extern Map map;
 extern Spawner spawner;
 
+int *Target::getNewViewportArray(){
+		int *tmp = new int[4];
+
+		tmp[0] = targetX - COLS/2;
+		tmp[1] = targetX + COLS/2;
+		tmp[2] = targetY - LINES/2;
+		tmp[3] = targetY - LINES/2;
+
+		return tmp;
+}
+
 /* Private Methods */
 
 // Some interesting thoughts about level generation. Because we have a
@@ -632,8 +643,8 @@ Map :: Map()
     currentLevel = 0;
 
 	levelHeader.levelType = 0;
-	levelHeader.levelWidth = 0;
-	levelHeader.levelWidth = 0;
+	levelHeader.levelWidth = LEVEL_WIDTH;
+	levelHeader.levelHeight = LEVEL_HEIGHT;
 
     target.targetX = LEVEL_WIDTH/2;
     target.targetY = LEVEL_HEIGHT/2;
@@ -936,11 +947,11 @@ void Map::getTileRand(int &y, int &x)
 	static std::uniform_int_distribution<int>
 		mapHeightDistribution(0, levelHeader.levelHeight);
 
-	auto mwDice = std::bind(mapWidthGenerator,
-							mapWidthDistribution);
+	auto mwDice = std::bind(mapWidthDistribution,
+							mapWidthGenerator);
 
-	auto mhDice = std::bind(mapHeightGenerator,
-							mapHeightDistribution);
+	auto mhDice = std::bind(mapHeightDistribution,
+							mapHeightGenerator);
 
 	y = mhDice();
 	x = mwDice();

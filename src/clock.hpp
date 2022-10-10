@@ -39,9 +39,10 @@ public:
 		
 		if(currentTick + ticks > MAX_TICKS){
 			numCycles += (currentTick + ticks) / MAX_TICKS;
+			currentTick = (currentTick + ticks) % MAX_TICKS;
+		} else {
+			currentTick = (currentTick + ticks);
 		}
-		
-        currentTick = (currentTick + ticks) % MAX_TICKS;
     }
 
     int getTime(){ return currentTick; }

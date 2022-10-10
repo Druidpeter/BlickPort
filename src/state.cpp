@@ -4,9 +4,11 @@
 // Data Cage Includes
 #include "map.hpp"
 #include "spawner.hpp"
+#include "clock.hpp"
 
 
 extern Map map;
+extern GsClock gsClock;
 
 void MapState::initialize(int spawnType)
 {
@@ -56,6 +58,8 @@ int MapState::update(Spawn *entity)
 			
 			mapFeedback = map.collideStep(x, y, this);
 		}
+
+		gsClock.modTime(1);
     }
 
     // Returning an integer other than false means that the calling

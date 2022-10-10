@@ -120,6 +120,8 @@ class Spawn : protected Entity{
                    //!< movement on y axis.
     int isJump;
 
+	char glyph;
+
 	friend class Spawner;
 protected:
     int spawnType;

@@ -4,6 +4,8 @@
  *
  */
 
+// #include <sys/types.h>
+
 #include "map.hpp"
 #include "entity.hpp"
 #include "spawner.hpp"
@@ -12,6 +14,7 @@
 
 extern Map map;
 extern GsClock gsClock;
+extern std::list<Entity *> entities;
 
 /* PRIVATE METHODS */
 
@@ -21,38 +24,42 @@ void Spawner::generateSpawn(sp::SpawnType spawnType, int amount)
 	// don't want to spawn anything anywhere the map is currently
 	// visible on screen.
 
-	int viewBounds[4]; = map.target.getNewViewportArray();
+	int *viewBounds;
+	viewBounds = map->target.getNewViewportArray();
 	
 	int x;
 	int y;
 
 	for(int i = amount; i > 0; --i){
 	redo:
-		map.getTileRand(EMPTY, y, x, 0);
+		map->getTileRand(EMPTY, y, x, 0);
 
 		if(x >= viewBounds[0] && x <= viewBounds[1] &&
 		   y >= viewBounds[2] && y <= viewBounds[3]){
 			goto redo;
 		}
 
-		Spawn sp;
-		sp.spawnType = spawnType;
+		MapState *ms = new MapState;
 		
-		sp.states.emplace_back();
-		sp.states.back() = new MapState;
-		sp.lookup.insert(std::pair<int, int>(MAP_STATE, sp.states.size()-1));
-
 		// Set the position of the new spawn to the random empty tile
 		// we found.
 		
-		sp.states.back()->position.x = x;
-		sp.states.back()->position.y = y;
+		ms->position.x = x;
+		ms->position.y = y;
 		
-		sp.states.emplace_back();
-		sp.states.back() = new SpawnState;
-		sp.lookup.insert(std::pair<int, int>(SPAWN_STATE, sp.states.size()-1));
+		Spawn *sp = new Spawn;
+		sp->spawnType = spawnType;
+		sp->glyph = 'm';
+		
+		sp->states.emplace_back();
+		sp->states.back() = ms;
+		sp->lookup.insert(std::pair<int, int>(MAP_STATE, sp->states.size()-1));
+		
+		sp->states.emplace_back();
+		sp->states.back() = new SpawnState;
+		sp->lookup.insert(std::pair<int, int>(SPAWN_STATE, sp->states.size()-1));
 
-		entities.push(sp);
+		entities.push_back(sp);
 	}
 }
 
@@ -82,7 +89,7 @@ void Spawner::processLevelData(Map *map)
 	// generated, to what extent, where to place them, various aspects
 	// regardings basic spawn interactions, movements, travel, et al.
 
-	uint16 **dt = map->layout;
+	uint16_t **dt = map->layout;
 
 	// We sample 15% of the cells in the map.
 	int sampleSize = (map->levelHeader.levelWidth *
@@ -91,6 +98,12 @@ void Spawner::processLevelData(Map *map)
 	int x;
 	int y;
 
+	numSpawnable = 1;
+	int *spawnsPtr = new int[numSpawnable];
+	spawnsPtr[0] = sp::SMUGBOAR;
+
+	spawns = spawnsPtr;
+	
 	// We can't actually implement everything discussed below without
 	// increasing the sophistication of the map terrain generation
 	// first, so this method is just a stub for now. Feel free to read
@@ -164,7 +177,7 @@ void Spawner::processLevelData(Map *map)
 	// We should spawn initial populations of monsters/beasts in this
 	// method, though. :D
 
-	spawnRates.insert(std::pair<sp::SMUGBOAR, 1/15>);
+	spawnRates.insert(std::pair<sp::SpawnType, double>(sp::SMUGBOAR, 0.06));
 	generateSpawn(sp::SMUGBOAR, 15);
 }
 
@@ -178,23 +191,24 @@ void Spawner::calculateBiomes()
 
 void Spawner::update()
 {
-	static int elapsedTime = 0;
-	elapsedTime += gsClock.getElapsed();
-
-	int numToSpawn;
+	// This algorithm for figuring out spawning mechanics within the
+	// currently active level is not good. For now, let's just work
+	// with whatever gets spawned initially into the level.
 	
-	for(int i = 0; i < numSpawnable; ++i){
-		// So, this algorithm doesn't work at all when we have
-		// multiple different species being spawned with different
-		// rates. But it should be sufficient when we just have a
-		// single type of entity getting spawned in.
-		
-		numToSpawn = spawnRates[spawns[i]] * elapsedTime;
-		generateSpawn(spawns[i], numToSpawn);
+	// int time = gsClock.getTime();
 
-		// Reset elapsed time to avoid population explosion. Keep in
-		// mind that this doesn't scale for multiple species with
-		// different spawn rates, and needs to be changed!!!
-		elapsedTime = 0;
-	}
+	// int numToSpawn;
+	// sp::SpawnType sp;
+	
+	// for(int i = 0; i < numSpawnable; ++i){
+	// 	// So, this algorithm doesn't work at all when we have
+	// 	// multiple different species being spawned with different
+	// 	// rates. But it should be sufficient when we just have a
+	// 	// single type of entity getting spawned in.
+
+	// 	sp = static_cast<sp::SpawnType>(spawns[i]);
+		
+	// 	numToSpawn = spawnRates[sp] * time;
+	// 	generateSpawn(sp, numToSpawn);
+	// }
 }

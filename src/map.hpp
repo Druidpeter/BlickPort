@@ -122,16 +122,7 @@ public:
 	// methods that follow the naming convention of
 	// "getNew<something><dataType>()" return heap-allocated data that
 	// should always be freed by whatever method calls it.
-	int *getNewViewportArray(){
-		int *tmp = new int[4];
-
-		tmp[0] = targetX - COLS/2;
-		tmp[1] = targetX + COLS/2;
-		tmp[2] = targetY - LINES/2;
-		tmp[3] = targetY - LINES/2;
-
-		return tmp;
-	};
+	int *getNewViewportArray();
 };
 
 //////////////////
@@ -198,7 +189,7 @@ struct LevelHeader{
 
 	int levelType;
 	int levelWidth;
-	int levelHeight
+	int levelHeight;
 };
 
 struct LevelStorage{

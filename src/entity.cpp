@@ -40,11 +40,23 @@ Spawn::~Spawn(){}
 
 void Spawn::event(en::EventType eType){}
 
-int Spawn::update(){ return true; }
+int Spawn::update(){ return false; }
 
 void Spawn::render()
 {
+    MapState *state = static_cast<MapState *>(getState(MAP_STATE));
+    Target *target = map.getTarget();
 
+    int x = state->position.x - target->targetX;
+    int y = state->position.y - target->targetY;
+
+    x = COLS/2 + x;
+    y = LINES/2 + y;
+
+	if(x >= 0 && x <= COLS &&
+	   y >= 0 && y <= LINES){
+		mvaddch(y, x, glyph);
+	}
 }
 
 void Spawn::initStates()
