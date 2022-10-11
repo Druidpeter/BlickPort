@@ -243,6 +243,9 @@ public:
     uint16_t getTileAtLoc(int x, int y){
         return layout[y][x];
     }
+
+	void getTileBlockArea(uint16_t tile, int &y, int &x, int w, int h);
+	void setTileGoal(MapState *state, int y, int x);
 public:
     Map();
     ~Map();

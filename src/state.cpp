@@ -8,6 +8,7 @@
 
 
 extern Map map;
+extern Spawner spawner;
 extern GsClock gsClock;
 
 void MapState::initialize(int spawnType)
@@ -100,4 +101,10 @@ void SpawnState::setBaseStats(EventData edata)
 
     derv[MAX_GELD] =
         (sum - base[CHARISMA]) * (base[CHARISMA] + lvl) * 10;
+}
+
+
+void SpawnState::update(Spawn *entity)
+{
+	
 }

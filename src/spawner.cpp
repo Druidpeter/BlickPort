@@ -212,3 +212,38 @@ void Spawner::update()
 	// 	generateSpawn(sp, numToSpawn);
 	// }
 }
+
+// Finally, we have a setup that works really well. Everything that is
+// needed for advanced, sentient class AI is brought together in one
+// place. The serve client method for any particular cage represents
+// an encapsulated AI algorithm that operates at a specific level of
+// abstraction.
+
+// The beauty and power of this setup is that for any one entity, we
+// may have multiple AI systems operating in tandem, at different
+// levels of abstraction, all cooperating together.
+
+void Spawner::serveClient(SpawnState *state, Spawn *entity)
+{
+	MapState *ms = static_cast<MapState *>(entity->getState(MAP_STATE));
+
+	if(ms->doesHaveGoal()){
+		return;
+	}
+	
+	int x = ms->position.x;
+	int y = ms->position.y;
+	
+	int w = 4;
+	int h = 5;
+
+	// Query the map for an empty tile within the block region.
+	map->getTileBlockArea(EMPTY, y, x, w, h);
+
+	if(!(y == -1 || x == -1)){
+		map->setTileGoal(ms, y, x);		
+	}
+
+
+	
+}
