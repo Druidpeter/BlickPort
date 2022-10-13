@@ -684,6 +684,9 @@ void Map::setTileGoal(MapState *state, int y, int x)
 {
 	// Set control variables within the MapState so that the MapState
 	// has the given coordinates as the next goal.
+
+	std::pair<int, int> tmp(y, x);
+	state->dStack.push_back(tmp);
 }
 
 /* Public Methods */

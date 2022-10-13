@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <list>
 
 #include "includes/quadtree/Vector2.h"
 
@@ -47,6 +48,13 @@ struct MapState : public State{
 	
 	// We need a stack of locations that represent goal destinations
 	// in sequence. The stack may be empty.
+
+	// Note: Technically speaking, we're not operating off of a *true*
+	// stack structure. Real stacks are of course always FILO, but
+	// real world prioritization algorithms usually can handle edge
+	// cases where insertions are done in the middle of the container.
+
+	std::list<std::pair<int, int>> dStack;
 	
     // Base Variables
     quadtree::Vector2<int> baseAccel;
@@ -81,6 +89,15 @@ public:
 	int doesHaveGoal(){
 		// Basically, if our goal stack is empty, return
 		// false. Otherwise, return true.
+
+		// Yeah, yeah... I know I can just return !(dStack.empty()),
+		// bite my ass.
+		
+		if(dStack.empty() == true){
+			return false;
+		} else {
+			return true;
+		}
 	};
 };
 
