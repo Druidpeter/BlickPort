@@ -11,6 +11,7 @@
 #include <string>
 #include <list>
 
+
 #include "includes/quadtree/Vector2.h"
 
 #define MAP_STATE 0
@@ -38,9 +39,11 @@ union EventData{
     
 struct State{
     virtual void initialize(int spawnType){};
-    virtual int update();
-    virtual int update(Spawn *entity);
+    virtual int update(){ return false; };
+    virtual int update(Spawn *entity){ return false; };
     virtual void event(EventId eventId, EventData data){};
+public:
+	virtual ~State(){};
 };
     
 struct MapState : public State{
@@ -103,6 +106,7 @@ public:
 
 namespace sp{
     enum SpawnType{
+		PLAYER,
         SMUGBOAR,
 		NUM_SPAWN_TYPES
     };
@@ -130,7 +134,7 @@ struct SpawnState : public State{
     int derv[NUM_DERIVED_STATS];
 
     // Race Stats
-    SpawnType spawnId;
+	sp::SpawnType spawnId;
     int raceMod[NUM_BASE_STATS];
 
     // Class Stats
@@ -145,7 +149,7 @@ struct SpawnState : public State{
     int xp;
 public:
 	virtual void initialize(int spawnType){};
-	virtual int update(Spawn *entiity){ return false; };
+	virtual int update(Spawn *entiity);
 	
     void event(EventId id, EventData data);
     void setBaseStats(EventData edata); 

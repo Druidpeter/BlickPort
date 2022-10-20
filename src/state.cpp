@@ -19,7 +19,7 @@ int MapState::update(Spawn *entity)
 {
 	static int bsCounter = 0;
 	
-	if(entity->spawnType != PLAYER){
+	if(entity->getSpawnType() != sp::PLAYER){
 		// We're dealing with an NPC, so we don't have controller
 		// input to determine velocity. Do it through the dStack.
 
@@ -49,7 +49,7 @@ int MapState::update(Spawn *entity)
 				velocity.y = 0;			
 			}
 
-			if(bsCounter == 3 &&){
+			if(bsCounter == 3 && dStack.size() != 0){
 				dStack.pop_back();
 				bsCounter = 0;
 
@@ -146,8 +146,9 @@ void SpawnState::setBaseStats(EventData edata)
         (sum - base[CHARISMA]) * (base[CHARISMA] + lvl) * 10;
 }
 
-
-void SpawnState::update(Spawn *entity)
+int SpawnState::update(Spawn *entity)
 {
-	
+	spawner.serveClient(this, entity);
+
+	return false;
 }

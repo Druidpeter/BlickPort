@@ -637,7 +637,7 @@ void Map::getLevelFromSignPost(int x, int y, LevelLink *levelLink)
 
 /* Getters and Setters */
 
-void getTileBlockArea(uint16_t tile, int &y, int &x, int w, int h)
+void Map::getTileBlockArea(uint16_t tile, int &y, int &x, int w, int h)
 {
 	// Because y & x are always coordinates of an entity already
 	// located within the map, y-h/2 and x-w/2 should never go past
@@ -650,7 +650,7 @@ void getTileBlockArea(uint16_t tile, int &y, int &x, int w, int h)
 	if(!(y >= 0 && y < levelHeader.levelHeight &&
 		 x >= 0 && x < levelHeader.levelWidth)){
 		std::cerr << "Received map lookup coordinates that don't exist. Killing myself.\n";
-		exit(std::EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 	
 	int tmpy = y - h/2;
@@ -659,24 +659,28 @@ void getTileBlockArea(uint16_t tile, int &y, int &x, int w, int h)
 	int tmpx = x - w/2;
 	tmpx = (tmpx < 0) ? 0 : tmpx;
 
-    h = (tmpy + h < levelHeader.levelHeight) ? h : levelHeader.levelHeight - 1;
-	w = (tmpx + w < levelHeader.levelWidth) ? w : levelHeader.levelWidth - 1;
+    h = (tmpy + h < levelHeader.levelHeight) ? h : levelHeader.levelHeight - tmpy - 1;
+	w = (tmpx + w < levelHeader.levelWidth) ? w : levelHeader.levelWidth - tmpx - 1;
 
 	int counter = 0;
-
+	
 	while(counter < 3){
 		x = (std::rand() % w) + tmpx;
 		y = (std::rand() % h) + tmpy;
-
+	
 		// Technically, we're supposed to check whether the tile found
 		// at random is equivalent to the uint16_t tile parameter. But
 		// for now, just check for empty.
-		if((layout[y][x] & 1) == TILE_EMPTY){
+		if((layout[y][x] & 1) == EMPTY){
 			break;
 		} else {
-			y = -1;
-			x = -1;
+			++counter;
 		}
+	}
+
+	if(counter == 3){
+		x = -1;
+		y = -1;
 	}
 }
 

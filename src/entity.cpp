@@ -40,7 +40,22 @@ Spawn::~Spawn(){}
 
 void Spawn::event(en::EventType eType){}
 
-int Spawn::update(){ return false; }
+int Spawn::update()
+{
+    static int killFlag = false;
+    
+    for(auto it = states.begin(); it != states.end(); ++it){
+        // Basically, any state clients can trigger a kill flag, which
+        // will cause the entity to be destroyed after being
+        // processed. If kill flag is greater than zero, then multiple
+        // kill flag requests were raised, but it doesn't matter
+        // because we remove the game entity if at least one is raised
+        // at all.
+        killFlag += (*it)->update(this);
+    }
+
+    return killFlag;
+}
 
 void Spawn::render()
 {
@@ -185,19 +200,19 @@ void PlayerRenderData::setAnimation(int animationType)
 
 Player::Player()
 {
-    spawnType = SPAWN_PLAYER;
+    spawnType = sp::PLAYER;
     states.emplace_back();
-    states.back() = new MapState;
+    states.back() = new MapState();
     lookup.insert(std::pair<int,int>(MAP_STATE, states.size()-1));
 
-    data = new PlayerRenderData();
-    data->type = PLAYER;
+    // data = new PlayerRenderData();
+    // data->type = sp::PLAYER;
     
-    data->fps = 60;
-    data->spriteOrigin.x = 0;
-    data->spriteOrigin.y = 0;
+    // data->fps = 60;
+    // data->spriteOrigin.x = 0;
+    // data->spriteOrigin.y = 0;
     
-    data->setAnimation(ANIM_IDLE);
+    // data->setAnimation(ANIM_IDLE);
 }
 
 Player::~Player(){}
