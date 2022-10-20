@@ -155,4 +155,8 @@ public:
     void setBaseStats(EventData edata); 
 };
 
+struct ItemState : public State{
+
+};
+
 #endif
