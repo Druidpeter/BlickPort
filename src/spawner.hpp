@@ -18,13 +18,6 @@ class Map;
 
 // SMUGBOAR -> 1/15 ticks.
 
-namespace sp{
-    enum SpawnType{
-        SMUGBOAR,
-		NUM_SPAWN_TYPES
-    };
-}
-
 class Spawner : public Cage{
     Map *map;
    
@@ -62,6 +55,8 @@ public:
     void event(){};
     virtual void update();
     void render(){};
+
+	void serveClient(SpawnState *state, Spawn *entity);
 };
 
 #endif

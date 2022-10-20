@@ -9,6 +9,7 @@
 #ifndef __GS_TYPES_HPP__
 #define __GS_TYPES_HPP__
 
-#define SPAWN_PLAYER 1
+// This header file is depreciated, and should be removed in the
+// future.
 
 #endif

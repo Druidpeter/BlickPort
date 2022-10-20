@@ -20,9 +20,6 @@
 
 /* Render Data Types */
 
-#define PLAYER 0
-#define ENEMY 1
-
 /* Animation Types */
 
 #define ANIM_IDLE 0
@@ -124,7 +121,7 @@ class Spawn : protected Entity{
 
 	friend class Spawner;
 protected:
-    int spawnType;
+	sp::SpawnType spawnType;
     RenderData *data;
     std::vector<State *> states;
     std::map<int, int> lookup;
@@ -152,6 +149,8 @@ public:
     virtual void setBaseStats(int stats[NUM_BASE_STATS]);
     virtual void setRace(int value);
     virtual void setClass(int value);
+
+	sp::SpawnType getSpawnType(){ return spawnType; };
 };
 
 // Different types of spawns, e.g. npcs, enemies, items, need

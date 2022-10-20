@@ -6,8 +6,8 @@
 #include "spawner.hpp"
 #include "clock.hpp"
 
-
 extern Map map;
+extern Spawner spawner;
 extern GsClock gsClock;
 
 void MapState::initialize(int spawnType)
@@ -17,6 +17,50 @@ void MapState::initialize(int spawnType)
 
 int MapState::update(Spawn *entity)
 {
+	static int bsCounter = 0;
+	
+	if(entity->getSpawnType() != sp::PLAYER){
+		// We're dealing with an NPC, so we don't have controller
+		// input to determine velocity. Do it through the dStack.
+
+		// Note: Normally we would implement some A* algorithm or
+		// something for path finding, but we actually don't care too
+		// much about accurate pathfinding at this state. We just want
+		// *some* movement. So setup a counter and a stupidly simple
+		// heuristic, and just assume we've reached the goal after 3
+		// loops.
+
+		if(!(dStack.empty())){
+			std::pair<int, int> dCoord = dStack.back();
+
+			if(dCoord.second - position.x > 0){
+				velocity.x = 1;
+			} else if(dCoord.second - position.x < 0){
+				velocity.x = -1;
+			} else {
+				velocity.x = 0;
+			}
+
+			if(dCoord.first - position.y > 0){
+				velocity.y = 1;
+			} else if(dCoord.first - position.y < 0){
+				velocity.y = -1;
+			} else {
+				velocity.y = 0;			
+			}
+
+			if(bsCounter == 3 && dStack.size() != 0){
+				dStack.pop_back();
+				bsCounter = 0;
+
+				velocity.x = 0;
+				velocity.y = 0;
+			} else {
+				++bsCounter;
+			}
+		}
+	}
+	
     int x = position.x + velocity.x;
     int y = position.y + velocity.y;
     
@@ -100,4 +144,11 @@ void SpawnState::setBaseStats(EventData edata)
 
     derv[MAX_GELD] =
         (sum - base[CHARISMA]) * (base[CHARISMA] + lvl) * 10;
+}
+
+int SpawnState::update(Spawn *entity)
+{
+	spawner.serveClient(this, entity);
+
+	return false;
 }

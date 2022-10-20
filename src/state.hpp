@@ -9,6 +9,8 @@
 
 #include <cstdlib>
 #include <string>
+#include <list>
+
 
 #include "includes/quadtree/Vector2.h"
 
@@ -40,9 +42,23 @@ struct State{
     virtual int update(){ return false; };
     virtual int update(Spawn *entity){ return false; };
     virtual void event(EventId eventId, EventData data){};
+public:
+	virtual ~State(){};
 };
     
 struct MapState : public State{
+	// Need to add more Control Variables:
+	
+	// We need a stack of locations that represent goal destinations
+	// in sequence. The stack may be empty.
+
+	// Note: Technically speaking, we're not operating off of a *true*
+	// stack structure. Real stacks are of course always FILO, but
+	// real world prioritization algorithms usually can handle edge
+	// cases where insertions are done in the middle of the container.
+
+	std::list<std::pair<int, int>> dStack;
+	
     // Base Variables
     quadtree::Vector2<int> baseAccel;
         
@@ -72,21 +88,53 @@ public:
         
     virtual void initialize(int spawnType);
     virtual int update(Spawn *entity);
+
+	int doesHaveGoal(){
+		// Basically, if our goal stack is empty, return
+		// false. Otherwise, return true.
+
+		// Yeah, yeah... I know I can just return !(dStack.empty()),
+		// bite my ass.
+		
+		if(dStack.empty() == true){
+			return false;
+		} else {
+			return true;
+		}
+	};
 };
 
-struct SpawnState : public State{
+namespace sp{
+    enum SpawnType{
+		PLAYER,
+        SMUGBOAR,
+		NUM_SPAWN_TYPES
+    };
+
+	enum ClassType{
+		NOBLE,
+		TRADESMAN,
+		SOLDIER,
+		DOCTOR,
+		SCHOLAR,
+		PEASANT,
+		PIDJEER
+	};
+}
+
+struct SpawnState : public State{	
     // Base Stats
-    enum {FITNESS, DEXTERITY, TOUGHNESS,
+    enum bsType{FITNESS, DEXTERITY, TOUGHNESS,
         WIT, CHARISMA, WILLPOWER, AFFINITY};
     int base[NUM_BASE_STATS];
 
     // Derived Stats
-    enum {MAX_HEALTH, MAX_MANA,
+    enum dsType{MAX_HEALTH, MAX_MANA,
         MAX_WEIGHT, MAX_GELD};
     int derv[NUM_DERIVED_STATS];
 
     // Race Stats
-    int raceType;
+	sp::SpawnType spawnId;
     int raceMod[NUM_BASE_STATS];
 
     // Class Stats
@@ -99,10 +147,9 @@ struct SpawnState : public State{
     
     int lvl;
     int xp;
-
 public:
 	virtual void initialize(int spawnType){};
-	virtual int update(Spawn *entiity){ return false; };
+	virtual int update(Spawn *entiity);
 	
     void event(EventId id, EventData data);
     void setBaseStats(EventData edata); 
